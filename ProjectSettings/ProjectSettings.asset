@@ -12,12 +12,12 @@ PlayerSettings:
   targetDevice: 2
   useOnDemandResources: 0
   accelerometerFrequency: 60
-  companyName: DefaultCompany
-  productName: TrabajoFinal_MovilesAvanzado
+  companyName: Xelor-DEV
+  productName: Portal Clash
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   m_SplashScreenBackgroundColor: {r: 0.13725491, g: 0.12156863, b: 0.1254902, a: 1}
-  m_ShowUnitySplashScreen: 1
+  m_ShowUnitySplashScreen: 0
   m_ShowUnitySplashLogo: 1
   m_SplashScreenOverlayOpacity: 1
   m_SplashScreenAnimation: 1
@@ -140,7 +140,7 @@ PlayerSettings:
   loadStoreDebugModeEnabled: 0
   visionOSBundleVersion: 1.0
   tvOSBundleVersion: 1.0
-  bundleVersion: 0.1.0
+  bundleVersion: 1.0
   preloadedAssets: []
   metroInputSource: 0
   wsaTransparentSwapchain: 0
@@ -859,8 +859,8 @@ PlayerSettings:
   editorAssembliesCompatibilityLevel: 1
   m_RenderingPath: 1
   m_MobileRenderingPath: 1
-  metroPackageName: TrabajoFinal_MovilesAvanzado
-  metroPackageVersion: 
+  metroPackageName: TrabajoFinalMovilesAvanzado
+  metroPackageVersion: 1.0.0.0
   metroCertificatePath: 
   metroCertificatePassword: 
   metroCertificateSubject: 
@@ -868,7 +868,7 @@ PlayerSettings:
   metroCertificateNotAfter: 0000000000000000
   metroApplicationDescription: TrabajoFinal_MovilesAvanzado
   wsaImages: {}
-  metroTileShortName: 
+  metroTileShortName: TrabajoFinal_MovilesAvanzado
   metroTileShowName: 0
   metroMediumTileShowName: 0
   metroLargeTileShowName: 0
@@ -937,10 +937,10 @@ PlayerSettings:
   captureStartupLogs: {}
   activeInputHandler: 2
   windowsGamepadBackendHint: 0
-  cloudProjectId: 44e77d6f-4ee7-4f8a-809e-bcd607740b6d
+  cloudProjectId: c7f6467b-8dfe-4d25-afd2-2700dc3f9a23
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: TrabajoFinal_MovilesAvanzado
+  projectName: Portal Clash
   organizationId: unity_b87cceb470a58ca84f37
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
