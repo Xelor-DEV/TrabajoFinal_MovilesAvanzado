@@ -13,11 +13,13 @@ public class AuthTransitionManager : MonoBehaviour
     [SerializeField] private WindowsController mainMenuWindow;
 
     [Header("UI References")]
-    [SerializeField] private Button authLoginButton;
+    [SerializeField] private Button authUnityLoginButton;
+    [SerializeField] private Button authAnonymousLoginButton;
 
     [Header("Service References")]
     [SerializeField] private StartScreen_Manager startScreenManager;
-    [SerializeField] private UnityAccountAuthService authService;
+    [SerializeField] private UnityAccountAuthService unityAuthService;
+    [SerializeField] private AnonymousAuthService anonymousAuthService;
     [SerializeField] private FadeManager fadeManager;
 
     [Header("Transition Events")]
@@ -27,44 +29,66 @@ public class AuthTransitionManager : MonoBehaviour
 
     private bool isTransitioning = false;
     private Action pendingTransitionAction;
+    private bool authInProgress = false;
+    private string currentAuthService = "";
 
     private void OnEnable()
     {
-        // Suscribirse al evento del StartScreen_Manager
         if (startScreenManager != null)
         {
             startScreenManager.onStartGame.AddListener(HandleStartScreenEvent);
         }
 
-        if (authLoginButton != null)
+        if (authUnityLoginButton != null)
         {
-            authLoginButton.onClick.AddListener(HandleAuthLoginButton);
+            authUnityLoginButton.onClick.AddListener(HandleUnityAuthLogin);
         }
 
-        if (authService != null)
+        if (authAnonymousLoginButton != null)
         {
-            authService.OnSignedIn.AddListener(HandleAuthSuccess);
-            authService.OnSignInFailed.AddListener(HandleAuthFailure);
+            authAnonymousLoginButton.onClick.AddListener(HandleAnonymousAuthLogin);
+        }
+
+        if (unityAuthService != null)
+        {
+            unityAuthService.OnSignedIn.AddListener(HandleAuthSuccess);
+            unityAuthService.OnSignInFailed.AddListener(HandleAuthFailure);
+        }
+
+        if (anonymousAuthService != null)
+        {
+            anonymousAuthService.OnSignedIn.AddListener(HandleAuthSuccess);
+            anonymousAuthService.OnSignInFailed.AddListener(HandleAuthFailure);
         }
     }
 
     private void OnDisable()
     {
-        // Limpiar todos los listeners
         if (startScreenManager != null)
         {
             startScreenManager.onStartGame.RemoveListener(HandleStartScreenEvent);
         }
 
-        if (authLoginButton != null)
+        if (authUnityLoginButton != null)
         {
-            authLoginButton.onClick.RemoveListener(HandleAuthLoginButton);
+            authUnityLoginButton.onClick.RemoveListener(HandleUnityAuthLogin);
         }
 
-        if (authService != null)
+        if (authAnonymousLoginButton != null)
         {
-            authService.OnSignedIn.RemoveListener(HandleAuthSuccess);
-            authService.OnSignInFailed.RemoveListener(HandleAuthFailure);
+            authAnonymousLoginButton.onClick.RemoveListener(HandleAnonymousAuthLogin);
+        }
+
+        if (unityAuthService != null)
+        {
+            unityAuthService.OnSignedIn.RemoveListener(HandleAuthSuccess);
+            unityAuthService.OnSignInFailed.RemoveListener(HandleAuthFailure);
+        }
+
+        if (anonymousAuthService != null)
+        {
+            anonymousAuthService.OnSignedIn.RemoveListener(HandleAuthSuccess);
+            anonymousAuthService.OnSignInFailed.RemoveListener(HandleAuthFailure);
         }
 
         CleanupFadeListeners();
@@ -76,10 +100,18 @@ public class AuthTransitionManager : MonoBehaviour
         StartTransition(TransitionToAuthWindow);
     }
 
-    private async void HandleAuthLoginButton()
+    private async void HandleUnityAuthLogin()
     {
-        if (isTransitioning) return;
-        await StartAuthProcess();
+        if (isTransitioning || authInProgress) return;
+        currentAuthService = "Unity";
+        await StartAuthProcess(unityAuthService.SignInAsync, "Unity");
+    }
+
+    private async void HandleAnonymousAuthLogin()
+    {
+        if (isTransitioning || authInProgress) return;
+        currentAuthService = "Anonymous";
+        await StartAuthProcess(anonymousAuthService.SignInAsync, "Anonymous");
     }
 
     private void StartTransition(Action transitionAction)
@@ -112,42 +144,37 @@ public class AuthTransitionManager : MonoBehaviour
         CompleteTransition();
     }
 
-    private async Task StartAuthProcess()
+    private async Task StartAuthProcess(Func<Task> authMethod, string authType)
     {
-        // El fade permanece visible durante el proceso de autenticación
-        if (authService != null)
+        authInProgress = true;
+        SetAuthButtonsInteractable(false);
+
+        try
         {
-            try
-            {
-                await authService.SignInAsync();
-                // El resultado se maneja en los eventos HandleAuthSuccess/HandleAuthFailure
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"Auth process exception: {ex.Message}");
-                fadeManager.Hide();
-                CompleteTransition();
-            }
+            fadeManager.Show();
+            await authMethod();
         }
-        else
+        catch (Exception ex)
         {
-            Debug.LogError("AuthService reference is missing!");
-            fadeManager.Hide();
-            CompleteTransition();
+            Debug.LogError($"{authType} Auth process exception: {ex.Message}");
+            HandleAuthFailure(ex);
         }
     }
 
     private void HandleAuthSuccess(PlayerInfo playerInfo)
     {
-        // Autenticación exitosa, proceder al main menu
-        StartTransition(TransitionToMainMenu);
+        string playerId = AuthenticationService.Instance.PlayerId;
+        Debug.Log($"Authentication successful for player: {playerId} via {currentAuthService}");
+
+        TransitionToMainMenu();
     }
 
     private void HandleAuthFailure(Exception exception)
     {
-        // En caso de error, ocultar el fade y permanecer en auth window
-        Debug.LogError($"Authentication failed: {exception.Message}");
+        Debug.LogError($"Authentication failed via {currentAuthService}: {exception.Message}");
+
         fadeManager.Hide();
+        ResetAuthState();
         CompleteTransition();
     }
 
@@ -162,6 +189,7 @@ public class AuthTransitionManager : MonoBehaviour
             mainMenuWindow.ShowWindow();
 
         fadeManager.Hide();
+        ResetAuthState();
         CompleteTransition();
     }
 
@@ -173,6 +201,22 @@ public class AuthTransitionManager : MonoBehaviour
         CleanupFadeListeners();
     }
 
+    private void ResetAuthState()
+    {
+        authInProgress = false;
+        currentAuthService = "";
+        SetAuthButtonsInteractable(true);
+    }
+
+    private void SetAuthButtonsInteractable(bool interactable)
+    {
+        if (authUnityLoginButton != null)
+            authUnityLoginButton.interactable = interactable;
+
+        if (authAnonymousLoginButton != null)
+            authAnonymousLoginButton.interactable = interactable;
+    }
+
     private void CleanupFadeListeners()
     {
         if (fadeManager != null)
@@ -182,7 +226,6 @@ public class AuthTransitionManager : MonoBehaviour
         }
     }
 
-    // Método para debug
     [ContextMenu("Force Start to Auth Transition")]
     private void DebugStartToAuthTransition()
     {

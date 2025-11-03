@@ -26,6 +26,7 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
 
     public const string KEY_RELAYCODE = "RelayCode";
     public const string KEY_MAP = "Map";
+    public const string KEY_GAMEMODE = "GameMode";
 
     private void Update()
     {
@@ -87,7 +88,7 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
         }
     }
 
-    public async Task<bool> CreateLobby(string lobbyName, int maxPlayers, bool isPrivate, string map)
+    public async Task<bool> CreateLobby(string lobbyName, int maxPlayers, bool isPrivate, string map, string gameMode)
     {
         try
         {
@@ -96,10 +97,11 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
                 IsPrivate = isPrivate,
                 Player = await GetPlayer(),
                 Data = new Dictionary<string, DataObject>
-                {
-                    { KEY_RELAYCODE, new DataObject(DataObject.VisibilityOptions.Member, "0") },
-                    { KEY_MAP, new DataObject(DataObject.VisibilityOptions.Public, map) },
-                }
+            {
+                { KEY_RELAYCODE, new DataObject(DataObject.VisibilityOptions.Member, "0") },
+                { KEY_MAP, new DataObject(DataObject.VisibilityOptions.Public, map) },
+                { KEY_GAMEMODE, new DataObject(DataObject.VisibilityOptions.Public, gameMode) }
+            }
             };
 
             Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, options);

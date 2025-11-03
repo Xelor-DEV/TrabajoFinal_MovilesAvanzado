@@ -1,8 +1,9 @@
-using UnityEngine.Events;
-using UnityEngine;
+using System;
 using System.Threading.Tasks;
 using Unity.Services.Authentication;
 using Unity.Services.Authentication.PlayerAccounts;
+using UnityEngine;
+using UnityEngine.Events;
 
 public class UnityAccountAuthService : BaseAuthService
 {
@@ -11,11 +12,19 @@ public class UnityAccountAuthService : BaseAuthService
 
     protected override async void Start()
     {
-        await InitializeAuthentication();
-
-        if (PlayerAccountService.Instance != null)
+        try
         {
-            PlayerAccountService.Instance.SignedIn += HandleUnityAccountSignedIn;
+            await InitializeAuthentication();
+
+            if (PlayerAccountService.Instance != null)
+            {
+                PlayerAccountService.Instance.SignedIn += HandleUnityAccountSignedIn;
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"[{ServiceType}] Failed to initialize Unity Account Auth Service: {ex.Message}");
+            OnSignInFailed?.Invoke(ex);
         }
     }
 
@@ -23,19 +32,23 @@ public class UnityAccountAuthService : BaseAuthService
     {
         if (!IsInitialized)
         {
-            Debug.LogWarning("Authentication service not initialized");
-            return;
+            Debug.LogWarning($"[{ServiceType}] Authentication service not initialized");
+            throw new InvalidOperationException("Authentication service not initialized");
         }
 
         try
         {
+            // Marcar este servicio como la fuente activa de autenticación
+            isActiveAuthSource = true;
+
             OnUnityAccountSignInStarted?.Invoke();
             await PlayerAccountService.Instance.StartSignInAsync();
         }
         catch (System.Exception ex)
         {
-            Debug.LogError($"Unity Account sign in failed: {ex.Message}");
-            OnSignInFailed?.Invoke(ex);
+            Debug.LogError($"[{ServiceType}] Unity Account sign in failed: {ex.Message}");
+            isActiveAuthSource = false; // Resetear en caso de error
+            throw;
         }
     }
 
@@ -48,7 +61,8 @@ public class UnityAccountAuthService : BaseAuthService
         }
         catch (System.Exception ex)
         {
-            Debug.LogError($"Sign in with Unity failed: {ex.Message}");
+            Debug.LogError($"[{ServiceType}] Sign in with Unity failed: {ex.Message}");
+            isActiveAuthSource = false; // Resetear en caso de error
             OnSignInFailed?.Invoke(ex);
         }
     }

@@ -14,6 +14,9 @@ public abstract class BaseAuthService : MonoBehaviour
     public UnityEvent OnSessionExpired;
 
     protected bool IsInitialized { get; private set; } = false;
+    protected string ServiceType => GetType().Name;
+
+    protected bool isActiveAuthSource = false;
 
     protected virtual async void Start()
     {
@@ -27,7 +30,7 @@ public abstract class BaseAuthService : MonoBehaviour
             if (UnityServices.State != ServicesInitializationState.Initialized)
             {
                 await UnityServices.InitializeAsync();
-                Debug.Log($"Unity Services initialized: {UnityServices.State}");
+                Debug.Log($"[{ServiceType}] Unity Services initialized: {UnityServices.State}");
             }
 
             SetupAuthenticationEvents();
@@ -35,7 +38,7 @@ public abstract class BaseAuthService : MonoBehaviour
         }
         catch (Exception ex)
         {
-            Debug.LogError($"Failed to initialize Unity Services: {ex.Message}");
+            Debug.LogError($"[{ServiceType}] Failed to initialize Unity Services: {ex.Message}");
             OnSignInFailed?.Invoke(ex);
         }
     }
@@ -50,25 +53,35 @@ public abstract class BaseAuthService : MonoBehaviour
 
     protected virtual void HandleSignedIn()
     {
-        Debug.Log($"Player signed in - ID: {AuthenticationService.Instance.PlayerId}");
+        // Solo procesar si este servicio fue la fuente de la autenticación
+        if (!isActiveAuthSource) return;
+
+        Debug.Log($"[{ServiceType}] Player signed in - ID: {AuthenticationService.Instance.PlayerId}");
         OnSignedIn?.Invoke(AuthenticationService.Instance.PlayerInfo);
+
+        // Resetear la bandera después de procesar
+        isActiveAuthSource = false;
     }
 
     protected virtual void HandleSignInFailed(RequestFailedException exception)
     {
-        Debug.LogError($"Sign in failed: {exception.Message}");
+        // Solo procesar si este servicio fue la fuente de la autenticación
+        if (!isActiveAuthSource) return;
+
+        Debug.LogError($"[{ServiceType}] Sign in failed: {exception.Message}");
         OnSignInFailed?.Invoke(exception);
+        isActiveAuthSource = false;
     }
 
     protected virtual void HandleSignedOut()
     {
-        Debug.Log("Player signed out");
+        Debug.Log($"[{ServiceType}] Player signed out");
         OnSignedOut?.Invoke();
     }
 
     protected virtual void HandleSessionExpired()
     {
-        Debug.Log("Player session expired");
+        Debug.Log($"[{ServiceType}] Player session expired");
         OnSessionExpired?.Invoke();
     }
 
