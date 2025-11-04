@@ -9,9 +9,11 @@ public class LobbyItemUI : MonoBehaviour
     [SerializeField] private TMP_Text lobbyNameText;
     [SerializeField] private TMP_Text playerCountText;
     [SerializeField] private TMP_Text mapText;
+    [SerializeField] private TMP_Text gameModeText;
     [SerializeField] private Button joinButton;
 
     private Lobby lobby;
+    private ListLobbiesWindow listLobbiesWindow;
 
     private void OnEnable()
     {
@@ -23,30 +25,37 @@ public class LobbyItemUI : MonoBehaviour
         joinButton.onClick.RemoveListener(JoinLobby);
     }
 
-    public void Initialize(Lobby lobby)
+    public void Initialize(Lobby lobby, ListLobbiesWindow parentWindow)
     {
         this.lobby = lobby;
+        this.listLobbiesWindow = parentWindow;
 
         lobbyNameText.text = lobby.Name;
         playerCountText.text = $"{lobby.Players.Count}/{lobby.MaxPlayers}";
 
         if (lobby.Data.ContainsKey(LobbyServiceManager.KEY_MAP))
         {
-            mapText.text = lobby.Data[LobbyServiceManager.KEY_MAP].Value;
+            mapText.text = $"Map: {lobby.Data[LobbyServiceManager.KEY_MAP].Value}";
         }
+
+        if (lobby.Data.ContainsKey(LobbyServiceManager.KEY_GAMEMODE))
+        {
+            gameModeText.text = $"Mode: {lobby.Data[LobbyServiceManager.KEY_GAMEMODE].Value}";
+        }
+
+        joinButton.interactable = lobby.Players.Count < lobby.MaxPlayers;
     }
 
-    private async void JoinLobby()
+    public void SetJoinButtonInteractable(bool interactable)
     {
-        joinButton.interactable = false;
+        joinButton.interactable = interactable && lobby.Players.Count < lobby.MaxPlayers;
+    }
 
-        bool success = await LobbyServiceManager.Instance.JoinLobbyById(lobby.Id);
-
-        joinButton.interactable = true;
-
-        if (!success)
+    private void JoinLobby()
+    {
+        if (listLobbiesWindow != null)
         {
-            Debug.LogError("Failed to join lobby");
+            listLobbiesWindow.JoinLobby(lobby.Id);
         }
     }
 }

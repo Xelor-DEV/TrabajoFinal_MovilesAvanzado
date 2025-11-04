@@ -778,6 +778,7 @@ MonoBehaviour:
   lobbyNameText: {fileID: 309008365859460484}
   playerCountText: {fileID: 7146202729269662274}
   mapText: {fileID: 7399173641200710407}
+  gameModeText: {fileID: 7399173641200710407}
   joinButton: {fileID: 7583324825243968138}
 --- !u!1 &7508377114685765984
 GameObject:

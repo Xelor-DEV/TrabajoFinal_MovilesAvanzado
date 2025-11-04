@@ -24,6 +24,7 @@ public class OtherModesManager : MonoBehaviour
 
         // Subscribe to lobby events
         LobbyServiceManager.Instance.OnLobbyUpdated += HandleLobbyJoined;
+        LobbyServiceManager.Instance.OnLobbyLeft += HandleLobbyLeft;
     }
 
     private void OnDisable()
@@ -35,7 +36,18 @@ public class OtherModesManager : MonoBehaviour
         if (LobbyServiceManager.Instance != null)
         {
             LobbyServiceManager.Instance.OnLobbyUpdated -= HandleLobbyJoined;
+            LobbyServiceManager.Instance.OnLobbyLeft -= HandleLobbyLeft;
         }
+    }
+
+    private void HandleLobbyLeft()
+    {
+        // Cuando se sale del lobby, mostrar la ventana de otros modos
+        otherModesWindow.ShowWindow();
+        listLobbiesWindow.HideWindow();
+        createLobbyWindow.HideWindow();
+        joinLobbyByCodeWindow.HideWindow();
+        currentLobbyWindow.HideWindow();
     }
 
     private void ShowListLobbiesWindow()

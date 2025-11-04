@@ -97,11 +97,11 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
                 IsPrivate = isPrivate,
                 Player = await GetPlayer(),
                 Data = new Dictionary<string, DataObject>
-            {
-                { KEY_RELAYCODE, new DataObject(DataObject.VisibilityOptions.Member, "0") },
-                { KEY_MAP, new DataObject(DataObject.VisibilityOptions.Public, map) },
-                { KEY_GAMEMODE, new DataObject(DataObject.VisibilityOptions.Public, gameMode) }
-            }
+                {
+                    { KEY_RELAYCODE, new DataObject(DataObject.VisibilityOptions.Member, "0") },
+                    { KEY_MAP, new DataObject(DataObject.VisibilityOptions.Public, map) },
+                    { KEY_GAMEMODE, new DataObject(DataObject.VisibilityOptions.Public, gameMode) }
+                }
             };
 
             Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, options);
@@ -162,21 +162,33 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
             return false;
         }
     }
-
-    public async void RefreshLobbyList()
+    public async Task RefreshLobbyList()
     {
         try
         {
-            QueryResponse queryResponse = await LobbyService.Instance.QueryLobbiesAsync();
+            QueryLobbiesOptions options = new QueryLobbiesOptions
+            {
+                Count = 10,
+                Filters = new List<QueryFilter>
+            {
+                new QueryFilter(
+                    field: QueryFilter.FieldOptions.AvailableSlots,
+                    op: QueryFilter.OpOptions.GT,
+                    value: "0")
+            }
+            };
+
+            QueryResponse queryResponse = await LobbyService.Instance.QueryLobbiesAsync(options);
             OnLobbyListUpdated?.Invoke(queryResponse.Results);
         }
         catch (LobbyServiceException ex)
         {
             Debug.LogError($"Refresh lobbies failed: {ex.Message}");
+            OnLobbyListUpdated?.Invoke(new List<Lobby>());
         }
     }
 
-    public async void StartGame()
+    public async Task StartGame()
     {
         if (!IsLobbyHost())
         {
@@ -251,6 +263,47 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
         }
     }
 
+    public async void UpdateLobbyGameMode(string gameMode)
+    {
+        if (!IsLobbyHost()) return;
+
+        try
+        {
+            HostLobby = await LobbyService.Instance.UpdateLobbyAsync(HostLobby.Id, new UpdateLobbyOptions
+            {
+                Data = new Dictionary<string, DataObject>
+            {
+                { KEY_GAMEMODE, new DataObject(DataObject.VisibilityOptions.Public, gameMode) }
+            }
+            });
+            JoinedLobby = HostLobby;
+        }
+        catch (LobbyServiceException ex)
+        {
+            Debug.LogError($"Update lobby game mode failed: {ex.Message}");
+        }
+    }
+
+    public async void UpdatePlayerReady(string playerId, bool isReady)
+    {
+        try
+        {
+            UpdatePlayerOptions options = new UpdatePlayerOptions
+            {
+                Data = new Dictionary<string, PlayerDataObject>
+            {
+                { "IsReady", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, isReady.ToString().ToLower()) }
+            }
+            };
+
+            await LobbyService.Instance.UpdatePlayerAsync(JoinedLobby.Id, playerId, options);
+        }
+        catch (LobbyServiceException ex)
+        {
+            Debug.LogError($"Update player ready failed: {ex.Message}");
+        }
+    }
+
     public async void UpdateMaxPlayers(int maxPlayers)
     {
         if (!IsLobbyHost()) return;
@@ -301,9 +354,10 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
         return new Player
         {
             Data = new Dictionary<string, PlayerDataObject>
-            {
-                { "PlayerName", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerName) }
-            }
+        {
+            { "PlayerName", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerName) },
+            { "IsReady", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, "false") }
+        }
         };
     }
 }

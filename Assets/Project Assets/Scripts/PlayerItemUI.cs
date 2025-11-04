@@ -8,6 +8,7 @@ public class PlayerItemUI : MonoBehaviour
 {
     [Header("UI References")]
     [SerializeField] private TMP_Text playerNameText;
+    [SerializeField] private TMP_Text readyStatusText;
     [SerializeField] private Button kickButton;
 
     private Player player;
@@ -35,7 +36,17 @@ public class PlayerItemUI : MonoBehaviour
             playerNameText.text = "Unknown Player";
         }
 
-        // Only show kick button for host and don't allow kicking yourself
+        // Mostrar estado de ready
+        if (player.Data.TryGetValue("IsReady", out PlayerDataObject isReadyData))
+        {
+            readyStatusText.text = isReadyData.Value == "true" ? "Ready" : "Not Ready";
+        }
+        else
+        {
+            readyStatusText.text = "Not Ready";
+        }
+
+        // Solo mostrar botón de kick para host y no permitir kickearse a sí mismo
         bool isOwnPlayer = player.Id == AuthenticationService.Instance.PlayerId;
         kickButton.gameObject.SetActive(isHost && !isOwnPlayer);
     }
