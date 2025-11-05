@@ -40,16 +40,6 @@ public class OtherModesManager : MonoBehaviour
         }
     }
 
-    private void HandleLobbyLeft()
-    {
-        // Cuando se sale del lobby, mostrar la ventana de otros modos
-        otherModesWindow.ShowWindow();
-        listLobbiesWindow.HideWindow();
-        createLobbyWindow.HideWindow();
-        joinLobbyByCodeWindow.HideWindow();
-        currentLobbyWindow.HideWindow();
-    }
-
     private void ShowListLobbiesWindow()
     {
         otherModesWindow.HideWindow();
@@ -68,16 +58,38 @@ public class OtherModesManager : MonoBehaviour
         joinLobbyByCodeWindow.ShowWindow();
     }
 
+    private void HandleLobbyLeft()
+    {
+        Debug.Log("HandleLobbyLeft called in OtherModesManager");
+
+        // Asegurarse de que estamos en la ventana correcta
+        if (otherModesWindow != null && !otherModesWindow.gameObject.activeInHierarchy)
+        {
+            otherModesWindow.ShowWindow();
+        }
+
+        // Ocultar todas las demás ventanas
+        if (listLobbiesWindow != null) listLobbiesWindow.HideWindow();
+        if (createLobbyWindow != null) createLobbyWindow.HideWindow();
+        if (joinLobbyByCodeWindow != null) joinLobbyByCodeWindow.HideWindow();
+        if (currentLobbyWindow != null) currentLobbyWindow.HideWindow();
+    }
+
     private void HandleLobbyJoined(Lobby lobby)
     {
-        // When a lobby is joined, show the current lobby window
         if (lobby != null && lobby.Players.Count > 0)
         {
+            Debug.Log("Lobby joined, transitioning to current lobby window");
+
+            // Ocultar todas las ventanas excepto currentLobbyWindow
             otherModesWindow.HideWindow();
             listLobbiesWindow.HideWindow();
             createLobbyWindow.HideWindow();
             joinLobbyByCodeWindow.HideWindow();
-            currentLobbyWindow.ShowWindow();
+
+            // Mostrar currentLobbyWindow
+            if (currentLobbyWindow != null)
+                currentLobbyWindow.ShowWindow();
         }
     }
 }

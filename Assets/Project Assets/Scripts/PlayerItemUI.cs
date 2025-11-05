@@ -23,6 +23,8 @@ public class PlayerItemUI : MonoBehaviour
         kickButton.onClick.RemoveListener(KickPlayer);
     }
 
+    // En PlayerItemUI.cs, mejora el método Initialize:
+
     public void Initialize(Player player, bool isHost)
     {
         this.player = player;
@@ -46,9 +48,26 @@ public class PlayerItemUI : MonoBehaviour
             readyStatusText.text = "Not Ready";
         }
 
+        // Verificar si es el host y cambiar color del nombre
+        var joinedLobby = LobbyServiceManager.Instance.JoinedLobby;
+        if (joinedLobby != null && player.Id == joinedLobby.HostId)
+        {
+            playerNameText.color = Color.green;
+            playerNameText.text += " (Host)";
+        }
+        else
+        {
+            playerNameText.color = Color.white;
+        }
+
         // Solo mostrar botón de kick para host y no permitir kickearse a sí mismo
         bool isOwnPlayer = player.Id == AuthenticationService.Instance.PlayerId;
-        kickButton.gameObject.SetActive(isHost && !isOwnPlayer);
+        if (kickButton != null)
+        {
+            kickButton.gameObject.SetActive(isHost && !isOwnPlayer);
+            kickButton.onClick.RemoveAllListeners();
+            kickButton.onClick.AddListener(KickPlayer);
+        }
     }
 
     private void KickPlayer()

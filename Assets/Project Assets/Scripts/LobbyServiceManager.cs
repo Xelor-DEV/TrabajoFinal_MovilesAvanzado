@@ -1,10 +1,12 @@
-using UnityEngine;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Unity.Netcode;
+using Unity.Services.Authentication;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
-using Unity.Services.Authentication;
-using System.Collections.Generic;
-using System;
-using System.Threading.Tasks;
+using UnityEngine;
 
 public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
 {
@@ -63,7 +65,7 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
             lobbyUpdateTimer -= Time.deltaTime;
             if (lobbyUpdateTimer < 0)
             {
-                float LobbyUpdateTimerMax = 1.1f;
+                float LobbyUpdateTimerMax = 2.0f;
                 lobbyUpdateTimer = LobbyUpdateTimerMax;
 
                 try
@@ -72,10 +74,24 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
                     JoinedLobby = lobby;
                     OnLobbyUpdated?.Invoke(lobby);
 
-                    // Auto-join relay when host sets the code
+                    // Verificar si el jugador actual sigue en el lobby
+                    string currentPlayerId = AuthenticationService.Instance.PlayerId;
+                    bool isStillInLobby = lobby.Players.Any(p => p.Id == currentPlayerId);
+
+                    if (!isStillInLobby)
+                    {
+                        Debug.Log("Player is no longer in the lobby after update");
+                        HostLobby = null;
+                        JoinedLobby = null;
+                        OnLobbyLeft?.Invoke();
+                        return;
+                    }
+
+                    // Auto-join relay cuando el host establece el código
                     if (lobby.Data.ContainsKey(KEY_RELAYCODE) &&
                         lobby.Data[KEY_RELAYCODE].Value != "0" &&
-                        !IsLobbyHost())
+                        !IsLobbyHost() &&
+                        !NetworkManager.Singleton.IsClient)
                     {
                         relayManager.JoinRelay(lobby.Data[KEY_RELAYCODE].Value);
                     }
@@ -83,6 +99,20 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
                 catch (LobbyServiceException ex)
                 {
                     Debug.LogError($"Lobby update failed: {ex.Message}");
+
+                    if (ex.Message.Contains("Too Many Requests"))
+                    {
+                        lobbyUpdateTimer = 5.0f;
+                        Debug.LogWarning("Rate limit hit, increasing poll interval");
+                    }
+                    else if (ex.Message.Contains("NotFound") || ex.Message.Contains("Forbidden"))
+                    {
+                        // El lobby ya no existe o no tenemos acceso
+                        Debug.Log("Lobby no longer accessible, triggering leave");
+                        HostLobby = null;
+                        JoinedLobby = null;
+                        OnLobbyLeft?.Invoke();
+                    }
                 }
             }
         }
@@ -330,10 +360,32 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
         {
             await LobbyService.Instance.RemovePlayerAsync(JoinedLobby.Id, playerId);
             Debug.Log($"Player {playerId} kicked from lobby");
+
+            // Notificar a todos los clientes sobre el cambio en el lobby
+            Lobby lobby = await LobbyService.Instance.GetLobbyAsync(JoinedLobby.Id);
+            JoinedLobby = lobby;
+            OnLobbyUpdated?.Invoke(lobby);
         }
         catch (LobbyServiceException ex)
         {
             Debug.LogError($"Kick player failed: {ex.Message}");
+        }
+    }
+
+    // Añade este método para manejar cuando un jugador es removido
+    private void HandlePlayerRemoved()
+    {
+        // Verificar si el jugador actual todavía está en el lobby
+        if (JoinedLobby != null)
+        {
+            bool isStillInLobby = JoinedLobby.Players.Any(p => p.Id == AuthenticationService.Instance.PlayerId);
+            if (!isStillInLobby)
+            {
+                Debug.Log("Player was removed from lobby");
+                HostLobby = null;
+                JoinedLobby = null;
+                OnLobbyLeft?.Invoke();
+            }
         }
     }
 
