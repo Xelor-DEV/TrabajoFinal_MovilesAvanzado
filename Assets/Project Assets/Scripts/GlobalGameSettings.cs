@@ -5,6 +5,7 @@ public class GlobalGameSettings : ScriptableObject
 {
     [Header("Player Settings")]
     public int maxGlobalPlayers = 2;
+    public int minPlayersToStart = 2;
 
     [Header("Available Maps")]
     public Map[] selectableMaps;

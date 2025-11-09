@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Unity.Netcode;
 using Unity.Services.Authentication;
@@ -55,6 +55,11 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
                 catch (LobbyServiceException ex)
                 {
                     Debug.LogError($"Heartbeat failed: {ex.Message}");
+                    // Si falla el heartbeat, el lobby podría haber sido eliminado
+                    if (ex.Message.Contains("NotFound"))
+                    {
+                        ForceLeaveLobby();
+                    }
                 }
             }
         }
@@ -102,12 +107,24 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
                         lobbyUpdateTimer = 5.0f;
                         Debug.LogWarning("Rate limit hit, increasing poll interval");
                     }
-                    else if (ex.Message.Contains("NotFound") || ex.Message.Contains("Forbidden"))
+                    else if (ex.Message.Contains("NotFound") || ex.Message.Contains("Not Found") || ex.Message.Contains("lobby not found"))
                     {
-                        // El lobby ya no existe o no tenemos acceso
-                        Debug.Log("Lobby no longer accessible, triggering leave");
+                        // El lobby ya no existe - fue eliminado por el host
+                        Debug.Log("Lobby was deleted by host, forcing all players to leave");
                         ForceLeaveLobby();
                     }
+                    else if (ex.Message.Contains("Forbidden"))
+                    {
+                        // No tenemos acceso al lobby
+                        Debug.Log("Access to lobby forbidden, forcing leave");
+                        ForceLeaveLobby();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"Unexpected error in lobby update: {ex.Message}");
+                    // En caso de error inesperado, forzar salida para evitar estado inconsistente
+                    ForceLeaveLobby();
                 }
             }
         }
@@ -129,10 +146,18 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
 
     private void ForceLeaveLobby()
     {
-        Debug.Log("ForceLeaveLobby called");
+        Debug.Log("ForceLeaveLobby called - Lobby no longer exists or player was removed");
+
+        // Limpiar referencias primero
+        var wasInLobby = JoinedLobby != null;
         HostLobby = null;
         JoinedLobby = null;
-        OnLobbyLeft?.Invoke();
+
+        // Solo invocar el evento si realmente estábamos en un lobby
+        if (wasInLobby)
+        {
+            OnLobbyLeft?.Invoke();
+        }
     }
 
     public async Task<bool> CreateLobby(string lobbyName, int maxPlayers, bool isPrivate, string map, string gameMode)
@@ -273,11 +298,15 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
         {
             if (IsLobbyHost())
             {
+                // Host: eliminar el lobby completo
                 await LobbyService.Instance.DeleteLobbyAsync(JoinedLobby.Id);
+                Debug.Log("Host deleted the lobby");
             }
             else
             {
+                // Cliente: solo salir del lobby
                 await LobbyService.Instance.RemovePlayerAsync(JoinedLobby.Id, currentPlayerId);
+                Debug.Log("Client left the lobby");
             }
 
             ForceLeaveLobby();
@@ -290,6 +319,7 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
         }
     }
 
+    // Resto de métodos permanecen igual...
     public async void UpdateLobbyMap(string map)
     {
         if (!IsLobbyHost()) return;

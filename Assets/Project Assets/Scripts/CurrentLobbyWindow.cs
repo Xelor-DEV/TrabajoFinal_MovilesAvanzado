@@ -245,9 +245,20 @@ public class CurrentLobbyWindow : MonoBehaviour
             if (exitLobbyButton != null) exitLobbyButton.gameObject.SetActive(!isHost);
             if (closeLobbyButton != null) closeLobbyButton.gameObject.SetActive(isHost);
 
-            // Actualizar estado del botón de start
+            // Actualizar estado del botón de start - considerar mínimo de jugadores
             if (startGameButton != null)
-                startGameButton.interactable = AreAllClientsReady();
+            {
+                bool hasEnoughPlayers = HasEnoughPlayersToStart();
+                bool allClientsReady = AreAllClientsReady();
+                startGameButton.interactable = hasEnoughPlayers && allClientsReady;
+
+                // Mostrar tooltip o mensaje si no hay suficientes jugadores
+                if (!hasEnoughPlayers)
+                {
+                    // Podrías añadir un texto de ayuda aquí
+                    Debug.Log($"Not enough players to start. Need at least {gameSettings.minPlayersToStart} players.");
+                }
+            }
 
             // Actualizar botón de ready
             if (readyButtonText != null)
@@ -400,10 +411,23 @@ public class CurrentLobbyWindow : MonoBehaviour
         }
     }
 
+    private bool HasEnoughPlayersToStart()
+    {
+        var lobby = LobbyServiceManager.Instance?.JoinedLobby;
+        if (lobby?.Players == null) return false;
+
+        // Verificar si hay al menos el mínimo de jugadores requeridos
+        return lobby.Players.Count >= gameSettings.minPlayersToStart;
+    }
+
+
     private bool AreAllClientsReady()
     {
         var lobby = LobbyServiceManager.Instance?.JoinedLobby;
         if (lobby?.Players == null) return false;
+
+        // Primero verificar que hay suficientes jugadores
+        if (!HasEnoughPlayersToStart()) return false;
 
         foreach (Player player in lobby.Players)
         {
