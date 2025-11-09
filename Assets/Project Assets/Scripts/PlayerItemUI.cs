@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Unity.Services.Lobbies.Models;
@@ -15,56 +15,68 @@ public class PlayerItemUI : MonoBehaviour
 
     private void OnEnable()
     {
-        kickButton.onClick.AddListener(KickPlayer);
+        if (kickButton != null)
+            kickButton.onClick.AddListener(KickPlayer);
     }
 
     private void OnDisable()
     {
-        kickButton.onClick.RemoveListener(KickPlayer);
+        if (kickButton != null)
+            kickButton.onClick.RemoveListener(KickPlayer);
     }
 
-    // En PlayerItemUI.cs, mejora el método Initialize:
-
-    public void Initialize(Player player, bool isHost)
+    public void Initialize(Player player, bool isHost, string hostId)
     {
         this.player = player;
 
-        if (player.Data.ContainsKey("PlayerName"))
+        if (playerNameText != null)
         {
-            playerNameText.text = player.Data["PlayerName"].Value;
-        }
-        else
-        {
-            playerNameText.text = "Unknown Player";
+            if (player.Data.ContainsKey("PlayerName"))
+            {
+                playerNameText.text = player.Data["PlayerName"].Value;
+            }
+            else
+            {
+                playerNameText.text = "Unknown Player";
+            }
+
+            // Color verde para el host
+            if (player.Id == hostId)
+            {
+                playerNameText.color = Color.green;
+                playerNameText.text += " (Host)";
+            }
         }
 
         // Mostrar estado de ready
-        if (player.Data.TryGetValue("IsReady", out PlayerDataObject isReadyData))
+        if (readyStatusText != null)
         {
-            readyStatusText.text = isReadyData.Value == "true" ? "Ready" : "Not Ready";
-        }
-        else
-        {
-            readyStatusText.text = "Not Ready";
+            if (player.Data.TryGetValue("IsReady", out PlayerDataObject isReadyData))
+            {
+                readyStatusText.text = isReadyData.Value == "true" ? "Ready" : "Not Ready";
+                readyStatusText.color = isReadyData.Value == "true" ? Color.green : Color.red;
+            }
+            else
+            {
+                readyStatusText.text = "Not Ready";
+                readyStatusText.color = Color.red;
+            }
+
+            // El host no tiene estado de ready
+            if (player.Id == hostId)
+            {
+                readyStatusText.text = "Host";
+                readyStatusText.color = Color.blue;
+            }
         }
 
-        // Verificar si es el host y cambiar color del nombre
-        var joinedLobby = LobbyServiceManager.Instance.JoinedLobby;
-        if (joinedLobby != null && player.Id == joinedLobby.HostId)
-        {
-            playerNameText.color = Color.green;
-            playerNameText.text += " (Host)";
-        }
-        else
-        {
-            playerNameText.color = Color.white;
-        }
-
-        // Solo mostrar botón de kick para host y no permitir kickearse a sí mismo
+        // Solo mostrar botÃ³n de kick para host y no permitir kickearse a sÃ­ mismo
         bool isOwnPlayer = player.Id == AuthenticationService.Instance.PlayerId;
         if (kickButton != null)
         {
-            kickButton.gameObject.SetActive(isHost && !isOwnPlayer);
+            kickButton.gameObject.SetActive(isHost && !isOwnPlayer && player.Id != hostId);
+
+            // Reconfigurar listener
             kickButton.onClick.RemoveAllListeners();
             kickButton.onClick.AddListener(KickPlayer);
         }
@@ -72,6 +84,7 @@ public class PlayerItemUI : MonoBehaviour
 
     private void KickPlayer()
     {
-        LobbyServiceManager.Instance.KickPlayer(player.Id);
+        if (player != null)
+            LobbyServiceManager.Instance.KickPlayer(player.Id);
     }
 }

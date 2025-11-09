@@ -1,6 +1,6 @@
-using System;
-using System.Collections.Generic;
+Ôªøusing System;
 using System.Linq;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Unity.Netcode;
 using Unity.Services.Authentication;
@@ -29,6 +29,8 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
     public const string KEY_RELAYCODE = "RelayCode";
     public const string KEY_MAP = "Map";
     public const string KEY_GAMEMODE = "GameMode";
+
+    private string currentPlayerId => AuthenticationService.Instance.PlayerId;
 
     private void Update()
     {
@@ -72,22 +74,17 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
                 {
                     Lobby lobby = await LobbyService.Instance.GetLobbyAsync(JoinedLobby.Id);
                     JoinedLobby = lobby;
-                    OnLobbyUpdated?.Invoke(lobby);
 
-                    // Verificar si el jugador actual sigue en el lobby
-                    string currentPlayerId = AuthenticationService.Instance.PlayerId;
-                    bool isStillInLobby = lobby.Players.Any(p => p.Id == currentPlayerId);
+                    // Verificar SIEMPRE si el jugador actual sigue en el lobby
+                    CheckIfPlayerStillInLobby(lobby);
 
-                    if (!isStillInLobby)
+                    // Solo invocar OnLobbyUpdated si el jugador sigue en el lobby
+                    if (IsPlayerInLobby(lobby))
                     {
-                        Debug.Log("Player is no longer in the lobby after update");
-                        HostLobby = null;
-                        JoinedLobby = null;
-                        OnLobbyLeft?.Invoke();
-                        return;
+                        OnLobbyUpdated?.Invoke(lobby);
                     }
 
-                    // Auto-join relay cuando el host establece el cÛdigo
+                    // Auto-join relay cuando el host establece el c√≥digo
                     if (lobby.Data.ContainsKey(KEY_RELAYCODE) &&
                         lobby.Data[KEY_RELAYCODE].Value != "0" &&
                         !IsLobbyHost() &&
@@ -109,13 +106,33 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
                     {
                         // El lobby ya no existe o no tenemos acceso
                         Debug.Log("Lobby no longer accessible, triggering leave");
-                        HostLobby = null;
-                        JoinedLobby = null;
-                        OnLobbyLeft?.Invoke();
+                        ForceLeaveLobby();
                     }
                 }
             }
         }
+    }
+
+    private void CheckIfPlayerStillInLobby(Lobby lobby)
+    {
+        if (!IsPlayerInLobby(lobby))
+        {
+            Debug.Log($"Player {currentPlayerId} is no longer in lobby {lobby.Id}. Triggering leave.");
+            ForceLeaveLobby();
+        }
+    }
+
+    private bool IsPlayerInLobby(Lobby lobby)
+    {
+        return lobby?.Players != null && lobby.Players.Any(p => p.Id == currentPlayerId);
+    }
+
+    private void ForceLeaveLobby()
+    {
+        Debug.Log("ForceLeaveLobby called");
+        HostLobby = null;
+        JoinedLobby = null;
+        OnLobbyLeft?.Invoke();
     }
 
     public async Task<bool> CreateLobby(string lobbyName, int maxPlayers, bool isPrivate, string map, string gameMode)
@@ -192,6 +209,7 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
             return false;
         }
     }
+
     public async Task RefreshLobbyList()
     {
         try
@@ -200,12 +218,12 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
             {
                 Count = 10,
                 Filters = new List<QueryFilter>
-            {
-                new QueryFilter(
-                    field: QueryFilter.FieldOptions.AvailableSlots,
-                    op: QueryFilter.OpOptions.GT,
-                    value: "0")
-            }
+                {
+                    new QueryFilter(
+                        field: QueryFilter.FieldOptions.AvailableSlots,
+                        op: QueryFilter.OpOptions.GT,
+                        value: "0")
+                }
             };
 
             QueryResponse queryResponse = await LobbyService.Instance.QueryLobbiesAsync(options);
@@ -259,16 +277,16 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
             }
             else
             {
-                await LobbyService.Instance.RemovePlayerAsync(JoinedLobby.Id, AuthenticationService.Instance.PlayerId);
+                await LobbyService.Instance.RemovePlayerAsync(JoinedLobby.Id, currentPlayerId);
             }
 
-            HostLobby = null;
-            JoinedLobby = null;
-            OnLobbyLeft?.Invoke();
+            ForceLeaveLobby();
         }
         catch (LobbyServiceException ex)
         {
             Debug.LogError($"Leave lobby failed: {ex.Message}");
+            // Forzar salida incluso si hay error
+            ForceLeaveLobby();
         }
     }
 
@@ -302,9 +320,9 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
             HostLobby = await LobbyService.Instance.UpdateLobbyAsync(HostLobby.Id, new UpdateLobbyOptions
             {
                 Data = new Dictionary<string, DataObject>
-            {
-                { KEY_GAMEMODE, new DataObject(DataObject.VisibilityOptions.Public, gameMode) }
-            }
+                {
+                    { KEY_GAMEMODE, new DataObject(DataObject.VisibilityOptions.Public, gameMode) }
+                }
             });
             JoinedLobby = HostLobby;
         }
@@ -321,9 +339,9 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
             UpdatePlayerOptions options = new UpdatePlayerOptions
             {
                 Data = new Dictionary<string, PlayerDataObject>
-            {
-                { "IsReady", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, isReady.ToString().ToLower()) }
-            }
+                {
+                    { "IsReady", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, isReady.ToString().ToLower()) }
+                }
             };
 
             await LobbyService.Instance.UpdatePlayerAsync(JoinedLobby.Id, playerId, options);
@@ -361,7 +379,7 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
             await LobbyService.Instance.RemovePlayerAsync(JoinedLobby.Id, playerId);
             Debug.Log($"Player {playerId} kicked from lobby");
 
-            // Notificar a todos los clientes sobre el cambio en el lobby
+            // Actualizar el lobby despu√©s de kickear
             Lobby lobby = await LobbyService.Instance.GetLobbyAsync(JoinedLobby.Id);
             JoinedLobby = lobby;
             OnLobbyUpdated?.Invoke(lobby);
@@ -372,27 +390,10 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
         }
     }
 
-    // AÒade este mÈtodo para manejar cuando un jugador es removido
-    private void HandlePlayerRemoved()
-    {
-        // Verificar si el jugador actual todavÌa est· en el lobby
-        if (JoinedLobby != null)
-        {
-            bool isStillInLobby = JoinedLobby.Players.Any(p => p.Id == AuthenticationService.Instance.PlayerId);
-            if (!isStillInLobby)
-            {
-                Debug.Log("Player was removed from lobby");
-                HostLobby = null;
-                JoinedLobby = null;
-                OnLobbyLeft?.Invoke();
-            }
-        }
-    }
-
     public bool IsLobbyHost()
     {
         return HostLobby != null && JoinedLobby != null &&
-               JoinedLobby.HostId == AuthenticationService.Instance.PlayerId;
+               JoinedLobby.HostId == currentPlayerId;
     }
 
     private async Task<Player> GetPlayer()
@@ -406,10 +407,10 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
         return new Player
         {
             Data = new Dictionary<string, PlayerDataObject>
-        {
-            { "PlayerName", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerName) },
-            { "IsReady", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, "false") }
-        }
+            {
+                { "PlayerName", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerName) },
+                { "IsReady", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, "false") }
+            }
         };
     }
 }
