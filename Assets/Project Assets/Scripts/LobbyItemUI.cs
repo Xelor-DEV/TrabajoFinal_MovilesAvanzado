@@ -43,12 +43,15 @@ public class LobbyItemUI : MonoBehaviour
             gameModeText.text = $"Mode: {lobby.Data[LobbyServiceManager.KEY_GAMEMODE].Value}";
         }
 
-        joinButton.interactable = lobby.Players.Count < lobby.MaxPlayers;
+        bool isLobbyFull = lobby.Players.Count >= lobby.MaxPlayers;
+
+        joinButton.interactable = !isLobbyFull;
     }
 
     public void SetJoinButtonInteractable(bool interactable)
     {
-        joinButton.interactable = interactable && lobby.Players.Count < lobby.MaxPlayers;
+        bool isLobbyFull = lobby.Players.Count >= lobby.MaxPlayers;
+        joinButton.interactable = interactable && !isLobbyFull;
     }
 
     private void JoinLobby()

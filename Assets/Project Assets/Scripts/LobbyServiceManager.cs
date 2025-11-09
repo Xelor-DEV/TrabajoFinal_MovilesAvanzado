@@ -241,14 +241,15 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
         {
             QueryLobbiesOptions options = new QueryLobbiesOptions
             {
-                Count = 10,
+                // Remover Count para obtener TODOS los lobbies
                 Filters = new List<QueryFilter>
-                {
-                    new QueryFilter(
-                        field: QueryFilter.FieldOptions.AvailableSlots,
-                        op: QueryFilter.OpOptions.GT,
-                        value: "0")
-                }
+            {
+                new QueryFilter(
+                    field: QueryFilter.FieldOptions.IsLocked,
+                    op: QueryFilter.OpOptions.EQ,
+                    value: "0") // Solo lobbies no bloqueados
+            }
+                // Nota: No incluimos filtro por AvailableSlots para ver TODOS los lobbies
             };
 
             QueryResponse queryResponse = await LobbyService.Instance.QueryLobbiesAsync(options);
@@ -442,5 +443,59 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
                 { "IsReady", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, "false") }
             }
         };
+    }
+
+    // Añade este método a la clase LobbyServiceManager
+
+    public async Task<bool> QuickJoinLobby()
+    {
+        try
+        {
+            Debug.Log("Attempting quick join to available lobby...");
+
+            // Configurar opciones para quick join
+            QuickJoinLobbyOptions options = new QuickJoinLobbyOptions
+            {
+                Player = await GetPlayer(),
+                Filter = new List<QueryFilter>
+            {
+                new QueryFilter(
+                    field: QueryFilter.FieldOptions.AvailableSlots,
+                    op: QueryFilter.OpOptions.GT,
+                    value: "0"),
+                new QueryFilter(
+                    field: QueryFilter.FieldOptions.IsLocked,
+                    op: QueryFilter.OpOptions.EQ,
+                    value: "0") // Solo lobbies no bloqueados
+            }
+            };
+
+            // Intentar unirse rápidamente a un lobby disponible
+            Lobby lobby = await LobbyService.Instance.QuickJoinLobbyAsync(options);
+            JoinedLobby = lobby;
+
+            Debug.Log($"Quick joined lobby: {lobby.Name}, Players: {lobby.Players.Count}/{lobby.MaxPlayers}");
+            return true;
+        }
+        catch (LobbyServiceException ex)
+        {
+            // Esto es normal si no hay lobbies disponibles
+            if (ex.Message.Contains("No open lobbies") || ex.Message.Contains("lobby not found"))
+            {
+                Debug.Log("No available lobbies found for quick join");
+            }
+            else
+            {
+                Debug.LogError($"Quick join failed: {ex.Message}");
+            }
+
+            OnLobbyJoinError?.Invoke($"Quick join failed: {ex.Message}");
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Unexpected error in quick join: {ex.Message}");
+            return false;
+        }
     }
 }

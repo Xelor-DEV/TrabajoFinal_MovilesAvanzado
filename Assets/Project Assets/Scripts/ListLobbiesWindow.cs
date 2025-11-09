@@ -86,23 +86,37 @@ public class ListLobbiesWindow : MonoBehaviour
         ClearLobbyItems();
 
         int publicLobbiesCount = 0;
+        int availableLobbiesCount = 0;
 
-        foreach (Lobby lobby in lobbies)
+        if (lobbies != null && lobbies.Count > 0)
         {
-            // Ignorar lobbies privados
-            if (lobby.IsPrivate) continue;
+            foreach (Lobby lobby in lobbies)
+            {
+                // Ignorar lobbies privados
+                if (lobby.IsPrivate) continue;
 
-            publicLobbiesCount++;
+                publicLobbiesCount++;
 
-            GameObject lobbyItemObj = Instantiate(lobbyItemPrefab, content);
-            LobbyItemUI lobbyItem = lobbyItemObj.GetComponent<LobbyItemUI>();
-            lobbyItem.Initialize(lobby, this);
-            lobbyItems.Add(lobbyItem);
+                // Contar lobbies con espacios disponibles
+                if (lobby.Players.Count < lobby.MaxPlayers)
+                {
+                    availableLobbiesCount++;
+                }
+
+                if (lobbyItemPrefab != null && content != null)
+                {
+                    GameObject lobbyItemObj = Instantiate(lobbyItemPrefab, content);
+                    LobbyItemUI lobbyItem = lobbyItemObj.GetComponent<LobbyItemUI>();
+                    if (lobbyItem != null)
+                    {
+                        lobbyItem.Initialize(lobby, this);
+                        lobbyItems.Add(lobbyItem);
+                    }
+                }
+            }
         }
 
-        Debug.Log(publicLobbiesCount > 0
-            ? $"Found {publicLobbiesCount} public lobbies"
-            : "No public lobbies found");
+        Debug.Log($"Found {publicLobbiesCount} public lobbies ({availableLobbiesCount} with available slots)");
 
         // Reactivar botón de refresh
         refreshButton.interactable = true;
