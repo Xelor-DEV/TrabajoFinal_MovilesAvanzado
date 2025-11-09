@@ -180,6 +180,9 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
             HostLobby = lobby;
             JoinedLobby = HostLobby;
 
+            // Crear y unirse al canal de texto del lobby
+            await VivoxLobbyManager.Instance.CreateAndJoinLobbyChannel(lobby.Id);
+
             Debug.Log($"Lobby created: {lobby.Name}, Players: {lobby.Players.Count}/{lobby.MaxPlayers}");
             return true;
         }
@@ -203,6 +206,8 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
             Lobby lobby = await LobbyService.Instance.JoinLobbyByCodeAsync(lobbyCode, options);
             JoinedLobby = lobby;
 
+            await VivoxLobbyManager.Instance.CreateAndJoinLobbyChannel(lobby.Id);
+
             Debug.Log($"Joined lobby: {lobby.Name}");
             return true;
         }
@@ -225,6 +230,9 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
 
             Lobby lobby = await LobbyService.Instance.JoinLobbyByIdAsync(lobbyId, options);
             JoinedLobby = lobby;
+
+            await VivoxLobbyManager.Instance.CreateAndJoinLobbyChannel(lobby.Id);
+
             return true;
         }
         catch (LobbyServiceException ex)
@@ -283,6 +291,10 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
             });
 
             JoinedLobby = lobby;
+
+            // Salir del canal de texto cuando inicia el juego
+            await VivoxLobbyManager.Instance.LeaveLobbyChannel();
+
             networkSceneManager.LoadGameScene("GameScene");
         }
         catch (Exception ex)
@@ -297,6 +309,8 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
 
         try
         {
+            await VivoxLobbyManager.Instance.LeaveLobbyChannel();
+
             if (IsLobbyHost())
             {
                 // Host: eliminar el lobby completo

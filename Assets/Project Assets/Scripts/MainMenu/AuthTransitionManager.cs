@@ -161,10 +161,22 @@ public class AuthTransitionManager : MonoBehaviour
         }
     }
 
-    private void HandleAuthSuccess(PlayerInfo playerInfo)
+    // En el método HandleAuthSuccess, añadir:
+    private async void HandleAuthSuccess(PlayerInfo playerInfo)
     {
         string playerId = AuthenticationService.Instance.PlayerId;
         Debug.Log($"Authentication successful for player: {playerId} via {currentAuthService}");
+
+        // Loguear en Vivox después de autenticarse
+        try
+        {
+            await VivoxLobbyManager.Instance.LoginVivox();
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Vivox login failed: {ex.Message}");
+            // Continuar aunque falle Vivox
+        }
 
         TransitionToMainMenu();
     }

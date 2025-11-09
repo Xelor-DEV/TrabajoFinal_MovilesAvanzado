@@ -387,9 +387,12 @@ public class CurrentLobbyWindow : MonoBehaviour
         UpdateUI();
     }
 
-    private void OnLobbyLeft()
+    private async void OnLobbyLeft()
     {
         Debug.Log("CurrentLobbyWindow: OnLobbyLeft called");
+
+        // Salir del canal de texto
+        await VivoxLobbyManager.Instance.LeaveLobbyChannel();
 
         if (currentLobbyWindow != null)
             currentLobbyWindow.HideWindow();
