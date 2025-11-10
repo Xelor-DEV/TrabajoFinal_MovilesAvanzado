@@ -144,11 +144,14 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
         return lobby?.Players != null && lobby.Players.Any(p => p.Id == currentPlayerId);
     }
 
-    private void ForceLeaveLobby()
+    private async void ForceLeaveLobby()
     {
         Debug.Log("ForceLeaveLobby called - Lobby no longer exists or player was removed");
 
-        // Limpiar referencias primero
+        // Siempre salir del canal de Vivox primero, independientemente del estado del lobby
+        await VivoxLobbyManager.Instance.LeaveLobbyChannel();
+
+        // Limpiar referencias después
         var wasInLobby = JoinedLobby != null;
         HostLobby = null;
         JoinedLobby = null;
@@ -421,6 +424,7 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
 
         try
         {
+            // Remover el jugador del lobby
             await LobbyService.Instance.RemovePlayerAsync(JoinedLobby.Id, playerId);
             Debug.Log($"Player {playerId} kicked from lobby");
 
@@ -428,6 +432,9 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
             Lobby lobby = await LobbyService.Instance.GetLobbyAsync(JoinedLobby.Id);
             JoinedLobby = lobby;
             OnLobbyUpdated?.Invoke(lobby);
+
+            // El jugador expulsado automáticamente será removido del canal de Vivox
+            // en el próximo ciclo de HandleLobbyPollForUpdates cuando detecte que ya no está en el lobby
         }
         catch (LobbyServiceException ex)
         {
@@ -487,6 +494,8 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
             // Intentar unirse rápidamente a un lobby disponible
             Lobby lobby = await LobbyService.Instance.QuickJoinLobbyAsync(options);
             JoinedLobby = lobby;
+
+            await VivoxLobbyManager.Instance.CreateAndJoinLobbyChannel(lobby.Id);
 
             Debug.Log($"Quick joined lobby: {lobby.Name}, Players: {lobby.Players.Count}/{lobby.MaxPlayers}");
             return true;

@@ -32,6 +32,7 @@ public class CurrentLobbyWindow : MonoBehaviour
     [Header("Window References")]
     [SerializeField] private WindowsController currentLobbyWindow;
     [SerializeField] private WindowsController otherModesWindow;
+    [SerializeField] private WindowsController lobbyChatWindow;
 
     [Header("Service References")]
     [SerializeField] private FadeManager fadeManager;
@@ -390,6 +391,13 @@ public class CurrentLobbyWindow : MonoBehaviour
     private async void OnLobbyLeft()
     {
         Debug.Log("CurrentLobbyWindow: OnLobbyLeft called");
+
+        // Cerrar la ventana de chat si está activa (independientemente de cómo se salió del lobby)
+        if (lobbyChatWindow != null && lobbyChatWindow.gameObject.activeInHierarchy)
+        {
+            Debug.Log("Closing chat window because player left the lobby");
+            lobbyChatWindow.HideWindow();
+        }
 
         // Salir del canal de texto
         await VivoxLobbyManager.Instance.LeaveLobbyChannel();
