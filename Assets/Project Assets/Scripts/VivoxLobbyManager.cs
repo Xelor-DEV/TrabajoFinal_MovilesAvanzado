@@ -8,24 +8,51 @@ using System.Collections.Generic;
 public class VivoxLobbyManager : NonPersistentSingleton<VivoxLobbyManager>
 {
     private string currentLobbyChannelName;
+    private bool isSubscribedToEvents = false;
 
     public bool IsInLobbyChannel => !string.IsNullOrEmpty(currentLobbyChannelName);
     public string CurrentLobbyChannel => currentLobbyChannelName;
 
-    private void Start() 
+    private void Start()
     {
-        if (VivoxService.Instance != null)
+        SubscribeToVivoxEvents();
+    }
+
+    private void SubscribeToVivoxEvents()
+    {
+        if (isSubscribedToEvents) return;
+
+        try
         {
             VivoxService.Instance.ChannelMessageReceived += OnChannelMessageReceived;
+            isSubscribedToEvents = true;
+            Debug.Log("VivoxLobbyManager: Successfully subscribed to Vivox events");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"VivoxLobbyManager: Failed to subscribe to Vivox events: {ex.Message}");
+        }
+    }
+
+    private void UnsubscribeFromVivoxEvents()
+    {
+        if (!isSubscribedToEvents) return;
+
+        try
+        {
+            VivoxService.Instance.ChannelMessageReceived -= OnChannelMessageReceived;
+            isSubscribedToEvents = false;
+            Debug.Log("VivoxLobbyManager: Unsubscribed from Vivox events");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"VivoxLobbyManager: Failed to unsubscribe from Vivox events: {ex.Message}");
         }
     }
 
     private void OnDestroy()
     {
-        if (VivoxService.Instance != null)
-        {
-            VivoxService.Instance.ChannelMessageReceived -= OnChannelMessageReceived;
-        }
+        UnsubscribeFromVivoxEvents();
     }
 
     public async Task<bool> LoginVivox()
@@ -48,6 +75,10 @@ public class VivoxLobbyManager : NonPersistentSingleton<VivoxLobbyManager>
 
             await VivoxService.Instance.LoginAsync(loginOptions);
             Debug.Log("Vivox login successful: " + nickName);
+
+            // Resuscribir eventos después del login por si acaso
+            SubscribeToVivoxEvents();
+
             return true;
         }
         catch (Exception ex)
@@ -75,6 +106,9 @@ public class VivoxLobbyManager : NonPersistentSingleton<VivoxLobbyManager>
 
             currentLobbyChannelName = "lobby_" + lobbyId;
             await VivoxService.Instance.JoinGroupChannelAsync(currentLobbyChannelName, ChatCapability.TextOnly);
+
+            // Asegurar suscripción a eventos después de unirse al canal
+            SubscribeToVivoxEvents();
 
             // Disparar evento de cambio de canal
             OnLobbyChannelChanged?.Invoke(currentLobbyChannelName);
@@ -122,6 +156,7 @@ public class VivoxLobbyManager : NonPersistentSingleton<VivoxLobbyManager>
             };
 
             await VivoxService.Instance.SendChannelTextMessageAsync(currentLobbyChannelName, message, messageOptions);
+            Debug.Log($"Message sent to channel {currentLobbyChannelName}: {message}");
         }
         catch (Exception ex)
         {
@@ -131,15 +166,46 @@ public class VivoxLobbyManager : NonPersistentSingleton<VivoxLobbyManager>
 
     private void OnChannelMessageReceived(VivoxMessage message)
     {
+        Debug.Log($"VivoxLobbyManager: Message received in channel {message.ChannelName} from {message.SenderDisplayName}: {message.MessageText}");
+
+        // Verificar que el mensaje sea del canal actual
         if (message.ChannelName == currentLobbyChannelName)
         {
+            Debug.Log($"VivoxLobbyManager: Dispatching message to UI - Channel: {message.ChannelName}, Sender: {message.SenderDisplayName}, Message: {message.MessageText}");
+
             // Disparar evento para que las UI lo capturen
             LobbyChatMessageReceived?.Invoke(message);
+        }
+        else
+        {
+            Debug.LogWarning($"VivoxLobbyManager: Message from different channel. Current: {currentLobbyChannelName}, Message Channel: {message.ChannelName}");
         }
     }
 
     // Eventos
     public event Action<VivoxMessage> LobbyChatMessageReceived;
-    public event Action<string> OnLobbyChannelChanged; // Nuevo canal
-    public event Action<string> OnLobbyChannelLeft; // Canal abandonado
+    public event Action<string> OnLobbyChannelChanged;
+    public event Action<string> OnLobbyChannelLeft;
+
+    // Método para debuggear el estado de las suscripciones
+    public void DebugSubscriptionStatus()
+    {
+        Debug.Log($"VivoxLobbyManager Debug - isSubscribedToEvents: {isSubscribedToEvents}, CurrentChannel: {currentLobbyChannelName}, IsLoggedIn: {VivoxService.Instance.IsLoggedIn}");
+    }
+
+    // En VivoxLobbyManager, añade este método temporal
+    public async void TestMessageReception()
+    {
+        Debug.Log("=== Testing Message Reception ===");
+        Debug.Log($"Current Channel: {currentLobbyChannelName}");
+        Debug.Log($"Is Subscribed: {isSubscribedToEvents}");
+        Debug.Log($"Is Logged In: {VivoxService.Instance.IsLoggedIn}");
+
+        // Enviar un mensaje de prueba
+        if (!string.IsNullOrEmpty(currentLobbyChannelName))
+        {
+            await SendLobbyMessage("TEST MESSAGE FROM HOST");
+            Debug.Log("Test message sent");
+        }
+    }
 }

@@ -34,6 +34,8 @@ public class LobbyChatNotification : MonoBehaviour
 
     private void OnEnable()
     {
+        Debug.Log("LobbyChatNotification: OnEnable - Subscribing to events");
+
         VivoxLobbyManager.Instance.LobbyChatMessageReceived += OnNewMessageReceived;
         VivoxLobbyManager.Instance.OnLobbyChannelChanged += OnLobbyChannelChanged;
         VivoxLobbyManager.Instance.OnLobbyChannelLeft += OnLobbyChannelLeft;
@@ -41,6 +43,8 @@ public class LobbyChatNotification : MonoBehaviour
 
     private void OnDisable()
     {
+        Debug.Log("LobbyChatNotification: OnDisable - Unsubscribing from events");
+
         if (VivoxLobbyManager.Instance != null)
         {
             VivoxLobbyManager.Instance.LobbyChatMessageReceived -= OnNewMessageReceived;
@@ -53,29 +57,37 @@ public class LobbyChatNotification : MonoBehaviour
 
     private void OnLobbyChannelChanged(string newChannelName)
     {
+        Debug.Log($"LobbyChatNotification: Channel changed to {newChannelName}");
         // Ocultar notificación cuando se cambia de canal
         HideNotificationImmediate();
-        Debug.Log($"Chat notification: Switched to new channel {newChannelName}");
     }
 
     private void OnLobbyChannelLeft(string channelName)
     {
+        Debug.Log($"LobbyChatNotification: Left channel {channelName}");
         // Ocultar notificación cuando se sale del canal
         HideNotificationImmediate();
-        Debug.Log($"Chat notification: Left channel {channelName}");
     }
 
     private void OnNewMessageReceived(VivoxMessage message)
     {
+        Debug.Log($"LobbyChatNotification: Received message from {message.SenderDisplayName}: {message.MessageText}");
+
         // Solo mostrar notificaciones del canal actual
         if (message.ChannelName == VivoxLobbyManager.Instance.CurrentLobbyChannel)
         {
             ShowMessageNotification(message.SenderDisplayName, message.MessageText);
         }
+        else
+        {
+            Debug.LogWarning($"LobbyChatNotification: Ignoring message from different channel. Current: {VivoxLobbyManager.Instance.CurrentLobbyChannel}, Message Channel: {message.ChannelName}");
+        }
     }
 
     public void ShowMessageNotification(string senderName, string message)
     {
+        Debug.Log($"LobbyChatNotification: Showing notification - {senderName}: {message}");
+
         // Actualizar textos
         senderNameText.text = senderName;
         messageText.text = message;
@@ -124,6 +136,8 @@ public class LobbyChatNotification : MonoBehaviour
 
     private void OpenChatWindow()
     {
+        Debug.Log("LobbyChatNotification: Opening chat window");
+
         if (chatWindowController != null)
         {
             chatWindowController.ShowWindow();
