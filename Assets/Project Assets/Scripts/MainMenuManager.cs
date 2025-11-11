@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using System;
 using System.Threading.Tasks;
 
@@ -8,27 +9,87 @@ public class MainMenuManager : MonoBehaviour
     [Header("UI References")]
     [SerializeField] private Button playButton;
     [SerializeField] private Button otherOptionsButton;
+    [SerializeField] private Button profileButton;
+    [SerializeField] private TMP_Text playerNameText;
+    [SerializeField] private Image playerIconImage;
 
     [Header("Window References")]
     [SerializeField] private WindowsController createLobbyWindow;
     [SerializeField] private WindowsController otherModesWindow;
     [SerializeField] private WindowsController currentLobbyWindow;
+    [SerializeField] private WindowsController profileWindow;
+
+    [Header("Data References")]
+    [SerializeField] private PlayerIcons playerIcons;
 
     [Header("Service References")]
     [SerializeField] private FadeManager fadeManager;
 
     private bool isQuickJoining = false;
 
-    private void OnEnable()
+    private async void OnEnable()
     {
         playButton.onClick.AddListener(HandlePlayButton);
         otherOptionsButton.onClick.AddListener(HandleOtherOptionsButton);
+        profileButton.onClick.AddListener(HandleProfileButton);
+
+        // Suscribirse a eventos del CloudSaveManager
+        CloudSaveManager.Instance.OnProfileDataLoaded += OnProfileDataUpdated;
+        CloudSaveManager.Instance.OnProfileDataSaved += OnProfileDataUpdated;
+
+        // Cargar perfil inicial
+        await LoadPlayerProfile();
     }
 
     private void OnDisable()
     {
         playButton.onClick.RemoveListener(HandlePlayButton);
         otherOptionsButton.onClick.RemoveListener(HandleOtherOptionsButton);
+        profileButton.onClick.RemoveListener(HandleProfileButton);
+
+        // Desuscribirse de eventos
+        if (CloudSaveManager.Instance != null)
+        {
+            CloudSaveManager.Instance.OnProfileDataLoaded -= OnProfileDataUpdated;
+            CloudSaveManager.Instance.OnProfileDataSaved -= OnProfileDataUpdated;
+        }
+    }
+
+    private async Task LoadPlayerProfile()
+    {
+        try
+        {
+            await CloudSaveManager.Instance.LoadPlayerProfileAsync();
+            // La UI se actualizará a través del evento OnProfileDataLoaded
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to load player profile in main menu: {ex.Message}");
+        }
+    }
+
+    private async void OnProfileDataUpdated(PlayerProfileData profileData)
+    {
+        await UpdatePlayerDisplay(profileData);
+    }
+
+    private async Task UpdatePlayerDisplay(PlayerProfileData profileData)
+    {
+        try
+        {
+            // Obtener nombre del jugador desde Authentication
+            string displayName = await CloudSaveManager.Instance.GetPlayerDisplayNameAsync();
+            playerNameText.text = displayName;
+
+            if (playerIcons != null && profileData != null)
+            {
+                playerIconImage.sprite = playerIcons.GetIcon(profileData.iconIndex);
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to update player display: {ex.Message}");
+        }
     }
 
     private async void HandlePlayButton()
@@ -38,22 +99,19 @@ public class MainMenuManager : MonoBehaviour
         isQuickJoining = true;
         playButton.interactable = false;
         otherOptionsButton.interactable = false;
+        profileButton.interactable = false;
 
         try
         {
-            // Mostrar fade durante la búsqueda
             if (fadeManager != null)
                 fadeManager.Show();
 
             Debug.Log("Starting quick join...");
-
-            // Intentar unirse rápidamente a un lobby
             bool success = await LobbyServiceManager.Instance.QuickJoinLobby();
 
             if (success)
             {
                 Debug.Log("Quick join successful!");
-                // Si nos unimos exitosamente, mostrar la ventana del lobby actual
                 if (currentLobbyWindow != null)
                 {
                     currentLobbyWindow.ShowWindow();
@@ -62,7 +120,6 @@ public class MainMenuManager : MonoBehaviour
             else
             {
                 Debug.Log("Quick join failed, opening create lobby window");
-                // Si no encontramos lobby, abrir ventana de creación
                 if (createLobbyWindow != null)
                 {
                     createLobbyWindow.ShowWindow();
@@ -72,7 +129,6 @@ public class MainMenuManager : MonoBehaviour
         catch (Exception ex)
         {
             Debug.LogError($"Quick join process failed: {ex.Message}");
-            // En caso de error, también abrir ventana de creación
             if (createLobbyWindow != null)
             {
                 createLobbyWindow.ShowWindow();
@@ -81,14 +137,12 @@ public class MainMenuManager : MonoBehaviour
         finally
         {
             isQuickJoining = false;
-
-            // Ocultar fade después de completar
             if (fadeManager != null)
                 fadeManager.Hide();
 
-            // Reactivar botones
             playButton.interactable = true;
             otherOptionsButton.interactable = true;
+            profileButton.interactable = true;
         }
     }
 
@@ -97,6 +151,14 @@ public class MainMenuManager : MonoBehaviour
         if (otherModesWindow != null)
         {
             otherModesWindow.ShowWindow();
+        }
+    }
+
+    private void HandleProfileButton()
+    {
+        if (profileWindow != null)
+        {
+            profileWindow.ShowWindow();
         }
     }
 }
