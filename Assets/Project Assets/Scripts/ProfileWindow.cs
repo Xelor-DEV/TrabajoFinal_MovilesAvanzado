@@ -39,6 +39,7 @@ public class ProfileWindow : MonoBehaviour
 
     private PlayerProfileData currentProfile;
     private int temporaryIconIndex;
+    private TaskCompletionSource<bool> uiUpdateCompletionSource;
 
     private void OnEnable()
     {
@@ -94,21 +95,21 @@ public class ProfileWindow : MonoBehaviour
         }
     }
 
-    private void OnProfileDataLoaded(PlayerProfileData loadedProfile)
+    private async void OnProfileDataLoaded(PlayerProfileData loadedProfile)
     {
         currentProfile = loadedProfile;
         temporaryIconIndex = currentProfile.iconIndex;
-        UpdateUI();
+        await UpdateUI();
     }
 
-    private void OnProfileDataSaved(PlayerProfileData savedProfile)
+    private async void OnProfileDataSaved(PlayerProfileData savedProfile)
     {
         currentProfile = savedProfile;
         temporaryIconIndex = currentProfile.iconIndex;
-        UpdateUI();
+        await UpdateUI();
     }
 
-    private async void UpdateUI()
+    private async Task UpdateUI()
     {
         if (currentProfile == null) return;
 
@@ -129,6 +130,9 @@ public class ProfileWindow : MonoBehaviour
 
         // Limpiar campos de entrada
         ClearInputFields();
+
+        // Indicar que la UI se ha actualizado completamente
+        uiUpdateCompletionSource?.TrySetResult(true);
     }
 
     private async Task UpdateDisplayNameText()
@@ -153,6 +157,12 @@ public class ProfileWindow : MonoBehaviour
         dayInput.text = "";
         monthInput.text = "";
         yearInput.text = "";
+    }
+
+    public Task WaitForUIUpdate()
+    {
+        uiUpdateCompletionSource = new TaskCompletionSource<bool>();
+        return uiUpdateCompletionSource.Task;
     }
 
     private async void ChangeDisplayName()

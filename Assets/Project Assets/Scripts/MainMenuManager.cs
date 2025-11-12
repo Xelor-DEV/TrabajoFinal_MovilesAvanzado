@@ -24,8 +24,11 @@ public class MainMenuManager : MonoBehaviour
 
     [Header("Service References")]
     [SerializeField] private FadeManager fadeManager;
+    [SerializeField] private ProfileWindow profileController;
 
     private bool isQuickJoining = false;
+    private bool isOpeningProfile = false;
+    private TaskCompletionSource<bool> uiUpdateCompletionSource;
 
     private async void OnEnable()
     {
@@ -85,11 +88,20 @@ public class MainMenuManager : MonoBehaviour
             {
                 playerIconImage.sprite = playerIcons.GetIcon(profileData.iconIndex);
             }
+
+            uiUpdateCompletionSource?.TrySetResult(true);
         }
         catch (Exception ex)
         {
             Debug.LogError($"Failed to update player display: {ex.Message}");
+            uiUpdateCompletionSource?.TrySetException(ex);
         }
+    }
+
+    public Task WaitForUIUpdate()
+    {
+        uiUpdateCompletionSource = new TaskCompletionSource<bool>();
+        return uiUpdateCompletionSource.Task;
     }
 
     private async void HandlePlayButton()
@@ -154,11 +166,42 @@ public class MainMenuManager : MonoBehaviour
         }
     }
 
-    private void HandleProfileButton()
+    private async void HandleProfileButton()
     {
-        if (profileWindow != null)
+        if (isOpeningProfile) return;
+
+        isOpeningProfile = true;
+        profileButton.interactable = false;
+
+        try
         {
-            profileWindow.ShowWindow();
+            // Mostrar fade mientras se carga el perfil
+            if (fadeManager != null)
+                fadeManager.Show();
+
+            if (profileController != null)
+            {
+                await profileController.WaitForUIUpdate();
+            }
+
+            // Mostrar la ventana solo después de que la UI esté actualizada
+            if (profileWindow != null)
+            {
+                profileWindow.ShowWindow();
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to open profile window: {ex.Message}");
+        }
+        finally
+        {
+            isOpeningProfile = false;
+            profileButton.interactable = true;
+
+            // Ocultar fade después de mostrar la ventana
+            if (fadeManager != null)
+                fadeManager.Hide();
         }
     }
 }

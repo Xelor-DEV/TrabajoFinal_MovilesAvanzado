@@ -21,6 +21,7 @@ public class AuthTransitionManager : MonoBehaviour
     [SerializeField] private UnityAccountAuthService unityAuthService;
     [SerializeField] private AnonymousAuthService anonymousAuthService;
     [SerializeField] private FadeManager fadeManager;
+    [SerializeField] private MainMenuManager mainMenuManager;
 
     [Header("Transition Events")]
     public UnityEvent OnStartToAuthTransition;
@@ -178,8 +179,40 @@ public class AuthTransitionManager : MonoBehaviour
             // Continuar aunque falle Vivox
         }
 
-        TransitionToMainMenu();
+        await TransitionToMainMenuWithUIUpdate();
     }
+
+    private async Task TransitionToMainMenuWithUIUpdate()
+    {
+        try
+        {
+            Debug.Log("Waiting for UI to update before showing main menu...");
+
+            if (mainMenuManager != null)
+            {
+                // Suscribirse temporalmente al evento de actualización de UI
+                var uiUpdateTask = mainMenuManager.WaitForUIUpdate();
+
+                // Cargar el perfil (esto disparará la actualización de UI)
+                await mainMenuManager.LoadPlayerProfile();
+
+                // Esperar a que la UI se actualice completamente
+                await uiUpdateTask;
+            }
+
+            Debug.Log("UI updated successfully, proceeding to main menu");
+
+            // Ahora proceder con la transición al menú principal
+            TransitionToMainMenu();
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to update UI during transition: {ex.Message}");
+            // Continuar con la transición aunque falle la actualización de UI
+            TransitionToMainMenu();
+        }
+    }
+
 
     private void HandleAuthFailure(Exception exception)
     {
