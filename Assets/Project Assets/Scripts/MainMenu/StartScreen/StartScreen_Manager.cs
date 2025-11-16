@@ -16,7 +16,7 @@ public class StartScreen_Manager : MonoBehaviour
     [SerializeField] private LocalizedString mobileString;
 
     [Header("Events")]
-    [SerializeField] private UnityEvent onStartGame;
+    public UnityEvent onStartGame;
 
     private InputDevice lastDevice;
     private bool isMobilePlatform;
@@ -130,5 +130,6 @@ public class StartScreen_Manager : MonoBehaviour
 
         inputReceived = true;
         onStartGame?.Invoke();
+        Debug.Log("Test");
     }
 }
