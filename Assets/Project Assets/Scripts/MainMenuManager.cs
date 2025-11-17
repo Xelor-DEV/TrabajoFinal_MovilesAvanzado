@@ -58,7 +58,7 @@ public class MainMenuManager : MonoBehaviour
         }
     }
 
-    private async Task LoadPlayerProfile()
+    public async Task LoadPlayerProfile()
     {
         try
         {
