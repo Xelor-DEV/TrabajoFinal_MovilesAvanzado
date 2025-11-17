@@ -81,9 +81,17 @@ public class VivoxLobbyManager : NonPersistentSingleton<VivoxLobbyManager>
                     {
                         playerDisplayNameToIdMap[displayName] = player.Id;
                         Debug.Log($"Mapped player: {displayName} -> {player.Id}");
+
+                        // Actualizar también el icono si está disponible
+                        if (player.Data.TryGetValue("IconIndex", out var iconData))
+                        {
+                            Debug.Log($"Player {displayName} has icon index: {iconData.Value}");
+                        }
                     }
                 }
             }
+
+            Debug.Log($"Player map updated with {playerDisplayNameToIdMap.Count} players");
         }
     }
 

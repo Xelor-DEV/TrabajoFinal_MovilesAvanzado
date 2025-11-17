@@ -668,6 +668,7 @@ MonoBehaviour:
   playerNameText: {fileID: 8384033147792309905}
   playerIconImage: {fileID: 3071821469522278465}
   volumeSlider: {fileID: 6147947643659980195}
+  playerIcons: {fileID: 11400000, guid: f36c198b6bfcc7f489c3014508133c3e, type: 2}
 --- !u!1 &8299821452564285946
 GameObject:
   m_ObjectHideFlags: 0

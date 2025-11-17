@@ -456,13 +456,29 @@ public class LobbyServiceManager : NonPersistentSingleton<LobbyServiceManager>
             playerName = "Player_" + UnityEngine.Random.Range(1000, 9999);
         }
 
+        // Cargar el iconIndex del perfil del jugador
+        int iconIndex = 0;
+        try
+        {
+            var profileData = await CloudSaveManager.Instance.LoadPlayerProfileAsync();
+            if (profileData != null)
+            {
+                iconIndex = profileData.iconIndex;
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"Failed to load player icon index: {ex.Message}");
+        }
+
         return new Player
         {
             Data = new Dictionary<string, PlayerDataObject>
-            {
-                { "PlayerName", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerName) },
-                { "IsReady", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, "false") }
-            }
+        {
+            { "PlayerName", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerName) },
+            { "IsReady", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, "false") },
+            { "IconIndex", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, iconIndex.ToString()) }
+        }
         };
     }
 

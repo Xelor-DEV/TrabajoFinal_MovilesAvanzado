@@ -64,6 +64,10 @@ public class VoiceChatWindow : MonoBehaviour
         VivoxService.Instance.ParticipantAddedToChannel += OnParticipantAdded;
         VivoxService.Instance.ParticipantRemovedFromChannel += OnParticipantRemoved;
 
+        // Inicializar dispositivos y UI
+        InitializeDevices();
+        UpdateDeviceDisplays();
+
         // Configurar slider y toggle
         if (inputVolumeSlider != null)
         {
@@ -78,7 +82,6 @@ public class VoiceChatWindow : MonoBehaviour
             muteToggle.isOn = false;
         }
 
-        UpdateDeviceDisplays();
         UpdatePlayerInfo();
         UpdateOtherPlayers();
     }
@@ -106,17 +109,41 @@ public class VoiceChatWindow : MonoBehaviour
     {
         inputDevices = VivoxLobbyManager.Instance.GetAvailableInputDevices().ToList();
         outputDevices = VivoxLobbyManager.Instance.GetAvailableOutputDevices().ToList();
+
+        // Establecer los índices actuales basados en los dispositivos activos
+        SetCurrentDeviceIndices();
+    }
+
+    private void SetCurrentDeviceIndices()
+    {
+        // Para dispositivos de entrada
+        var activeInputDevice = VivoxService.Instance.ActiveInputDevice;
+        if (activeInputDevice != null && inputDevices.Count > 0)
+        {
+            currentInputDeviceIndex = inputDevices.FindIndex(device => device.DeviceID == activeInputDevice.DeviceID);
+            if (currentInputDeviceIndex == -1) currentInputDeviceIndex = 0;
+        }
+
+        // Para dispositivos de salida
+        var activeOutputDevice = VivoxService.Instance.ActiveOutputDevice;
+        if (activeOutputDevice != null && outputDevices.Count > 0)
+        {
+            currentOutputDeviceIndex = outputDevices.FindIndex(device => device.DeviceID == activeOutputDevice.DeviceID);
+            if (currentOutputDeviceIndex == -1) currentOutputDeviceIndex = 0;
+        }
     }
 
     private void OnAvailableInputDevicesChanged()
     {
         inputDevices = VivoxLobbyManager.Instance.GetAvailableInputDevices().ToList();
+        SetCurrentDeviceIndices(); // Actualizar índices cuando cambien los dispositivos
         UpdateInputDeviceDisplay();
     }
 
     private void OnAvailableOutputDevicesChanged()
     {
         outputDevices = VivoxLobbyManager.Instance.GetAvailableOutputDevices().ToList();
+        SetCurrentDeviceIndices(); // Actualizar índices cuando cambien los dispositivos
         UpdateOutputDeviceDisplay();
     }
 
@@ -195,26 +222,11 @@ public class VoiceChatWindow : MonoBehaviour
     {
         if (isMuted)
         {
-            if (!VivoxService.Instance.IsInputDeviceMuted) 
-            {
-                VivoxLobbyManager.Instance.MuteInputDevice();
-            }
-            else
-            {
-                VivoxLobbyManager.Instance.UnmuteInputDevice();
-            }
+            VivoxLobbyManager.Instance.MuteInputDevice();
         }
         else
         {
-            if (VivoxService.Instance.IsInputDeviceMuted)
-            {
-                VivoxLobbyManager.Instance.UnmuteInputDevice();
-
-            }
-            else
-            {
-                VivoxLobbyManager.Instance.MuteInputDevice();
-            }
+            VivoxLobbyManager.Instance.UnmuteInputDevice();
         }
 
         // Desactivar el slider si está muteado
@@ -263,6 +275,7 @@ public class VoiceChatWindow : MonoBehaviour
             VoiceChatPlayerItemUI playerItem = playerItemObj.GetComponent<VoiceChatPlayerItemUI>();
             if (playerItem != null)
             {
+
                 playerItem.Initialize(player);
                 playerItems.Add(playerItem);
             }
