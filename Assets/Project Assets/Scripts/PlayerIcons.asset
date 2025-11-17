@@ -13,28 +13,10 @@ MonoBehaviour:
   m_Name: PlayerIcons
   m_EditorClassIdentifier: 
   icons:
-  - {fileID: -1055968024, guid: 5937902c014105146bfa854d141fd844, type: 3}
-  - {fileID: -1841176470, guid: 5937902c014105146bfa854d141fd844, type: 3}
-  - {fileID: -1288520548, guid: 5937902c014105146bfa854d141fd844, type: 3}
-  - {fileID: -2070979213, guid: 5937902c014105146bfa854d141fd844, type: 3}
-  - {fileID: 278782769, guid: 5937902c014105146bfa854d141fd844, type: 3}
-  - {fileID: 1263327053, guid: 5937902c014105146bfa854d141fd844, type: 3}
-  - {fileID: 359809376, guid: 5937902c014105146bfa854d141fd844, type: 3}
-  - {fileID: -1690179030, guid: 5937902c014105146bfa854d141fd844, type: 3}
-  - {fileID: 295661766, guid: 5937902c014105146bfa854d141fd844, type: 3}
-  - {fileID: 574893646, guid: 5937902c014105146bfa854d141fd844, type: 3}
-  - {fileID: 1996290971, guid: 5937902c014105146bfa854d141fd844, type: 3}
-  - {fileID: 86076580, guid: 5937902c014105146bfa854d141fd844, type: 3}
-  - {fileID: -1320811802, guid: 5937902c014105146bfa854d141fd844, type: 3}
-  - {fileID: 1827328047, guid: 5937902c014105146bfa854d141fd844, type: 3}
-  - {fileID: -1455996250, guid: 5937902c014105146bfa854d141fd844, type: 3}
-  - {fileID: 1601933521, guid: 5937902c014105146bfa854d141fd844, type: 3}
-  - {fileID: -1450705563, guid: 5937902c014105146bfa854d141fd844, type: 3}
-  - {fileID: -2083324893, guid: 5937902c014105146bfa854d141fd844, type: 3}
-  - {fileID: 253825407, guid: 5937902c014105146bfa854d141fd844, type: 3}
-  - {fileID: 460520909, guid: 5937902c014105146bfa854d141fd844, type: 3}
-  - {fileID: -2037589642, guid: 5937902c014105146bfa854d141fd844, type: 3}
-  - {fileID: -1113982850, guid: 5937902c014105146bfa854d141fd844, type: 3}
-  - {fileID: -1769783432, guid: 5937902c014105146bfa854d141fd844, type: 3}
-  - {fileID: 1222569586, guid: 5937902c014105146bfa854d141fd844, type: 3}
-  - {fileID: -968814594, guid: 5937902c014105146bfa854d141fd844, type: 3}
+  - {fileID: 836773335, guid: c79a943b3ceecd64992287113f487452, type: 3}
+  - {fileID: 1184782275, guid: 5537911c446dfc24088225ea0980b116, type: 3}
+  - {fileID: 676353741, guid: 62569724c4d4973408fbe13c0dc75b3f, type: 3}
+  - {fileID: -207605806, guid: 9c0d8ce51b7871d43a2a9f2d4aea06b1, type: 3}
+  - {fileID: -1215352085, guid: f67e058132a9bf7448f9c76820b9e5da, type: 3}
+  - {fileID: 1310982483, guid: e04ccccfaa3775044bf279924f078186, type: 3}
+  - {fileID: -715048009, guid: d1f904fa01a184248ac17875e2e4646a, type: 3}

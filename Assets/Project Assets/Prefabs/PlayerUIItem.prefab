@@ -230,6 +230,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerNameText: {fileID: 3388529166092174956}
   readyStatusText: {fileID: 5371136144951252132}
+  playerIconImage: {fileID: 5434748944947130980}
   kickButton: {fileID: 526193443467774657}
 --- !u!1 &5015109363439964395
 GameObject:

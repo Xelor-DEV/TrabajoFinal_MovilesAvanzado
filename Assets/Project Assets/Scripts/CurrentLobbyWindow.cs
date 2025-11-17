@@ -23,8 +23,8 @@ public class CurrentLobbyWindow : MonoBehaviour
     [SerializeField] private Button startGameButton;
     [SerializeField] private Button readyButton;
     [SerializeField] private TMP_Text readyButtonText;
-    [SerializeField] private Button exitLobbyButton; // Para clientes
-    [SerializeField] private Button closeLobbyButton; // Para host - cerrar lobby completo
+    [SerializeField] private Button exitLobbyButton;
+    [SerializeField] private Button closeLobbyButton;
     [SerializeField] private Toggle isPrivateToggle;
     [SerializeField] private Transform content;
     [SerializeField] private GameObject playerItemPrefab;
@@ -38,6 +38,9 @@ public class CurrentLobbyWindow : MonoBehaviour
     [SerializeField] private FadeManager fadeManager;
     [SerializeField] private GlobalGameSettings gameSettings;
 
+    [Header("Data References")]
+    [SerializeField] private PlayerIcons playerIcons;
+
     private string[] maps;
     private string[] gameModes;
     private int currentMapIndex = 0;
@@ -45,6 +48,11 @@ public class CurrentLobbyWindow : MonoBehaviour
     private List<PlayerItemUI> playerItems = new List<PlayerItemUI>();
     private bool isReady = false;
     private bool isStartingGame = false;
+
+    // Variables para controlar cambios
+    private string lastPlayerListHash = "";
+    private int lastPlayerCount = 0;
+    private string lastHostId = "";
 
     private string currentPlayerId => AuthenticationService.Instance.PlayerId;
 
@@ -77,6 +85,9 @@ public class CurrentLobbyWindow : MonoBehaviour
         // Reinicializar estado
         isReady = false;
         isStartingGame = false;
+
+        // Resetear el hash para forzar una actualización inicial
+        lastPlayerListHash = "";
 
         // Usar Coroutine para esperar un frame antes de actualizar UI
         StartCoroutine(DelayedUIUpdate());
@@ -186,86 +197,13 @@ public class CurrentLobbyWindow : MonoBehaviour
 
         try
         {
-            // Comprobaciones de nulidad seguras
-            if (lobbyNameText != null) lobbyNameText.text = lobby.Name ?? "Unnamed Lobby";
-            if (playerCountText != null) playerCountText.text = $"{lobby.Players?.Count ?? 0}/{lobby.MaxPlayers}";
-            if (lobbyCodeText != null) lobbyCodeText.text = lobby.LobbyCode ?? "No Code";
+            UpdateLobbyInfo(lobby);
 
-            // Toggle de privacidad
-            if (isPrivateToggle != null)
+            // Solo actualizar la lista de jugadores si hay cambios significativos
+            if (ShouldUpdatePlayerList(lobby))
             {
-                isPrivateToggle.isOn = lobby.IsPrivate;
-                isPrivateToggle.interactable = false;
+                UpdatePlayerList(lobby);
             }
-
-            // Actualizar mapa
-            if (mapText != null && lobby.Data != null && lobby.Data.ContainsKey(LobbyServiceManager.KEY_MAP))
-            {
-                string currentMap = lobby.Data[LobbyServiceManager.KEY_MAP].Value;
-                mapText.text = currentMap ?? "Unknown";
-
-                for (int i = 0; i < maps.Length; i++)
-                {
-                    if (maps[i] == currentMap)
-                    {
-                        currentMapIndex = i;
-                        break;
-                    }
-                }
-            }
-
-            // Actualizar modo de juego
-            if (gameModeText != null && lobby.Data != null && lobby.Data.ContainsKey(LobbyServiceManager.KEY_GAMEMODE))
-            {
-                string currentGameMode = lobby.Data[LobbyServiceManager.KEY_GAMEMODE].Value;
-                gameModeText.text = currentGameMode ?? "Unknown";
-
-                for (int i = 0; i < gameModes.Length; i++)
-                {
-                    if (gameModes[i] == currentGameMode)
-                    {
-                        currentGameModeIndex = i;
-                        break;
-                    }
-                }
-            }
-
-            bool isHost = LobbyServiceManager.Instance.IsLobbyHost();
-
-            // Configurar visibilidad de controles
-            if (nextMapButton != null) nextMapButton.gameObject.SetActive(isHost);
-            if (previousMapButton != null) previousMapButton.gameObject.SetActive(isHost);
-            if (nextGameModeButton != null) nextGameModeButton.gameObject.SetActive(isHost);
-            if (previousGameModeButton != null) previousGameModeButton.gameObject.SetActive(isHost);
-
-            // Configurar botones de start y ready
-            if (startGameButton != null) startGameButton.gameObject.SetActive(isHost);
-            if (readyButton != null) readyButton.gameObject.SetActive(!isHost);
-
-            // Configurar botones de salida
-            if (exitLobbyButton != null) exitLobbyButton.gameObject.SetActive(!isHost);
-            if (closeLobbyButton != null) closeLobbyButton.gameObject.SetActive(isHost);
-
-            // Actualizar estado del botón de start - considerar mínimo de jugadores
-            if (startGameButton != null)
-            {
-                bool hasEnoughPlayers = HasEnoughPlayersToStart();
-                bool allClientsReady = AreAllClientsReady();
-                startGameButton.interactable = hasEnoughPlayers && allClientsReady;
-
-                // Mostrar tooltip o mensaje si no hay suficientes jugadores
-                if (!hasEnoughPlayers)
-                {
-                    // Podrías añadir un texto de ayuda aquí
-                    Debug.Log($"Not enough players to start. Need at least {gameSettings.minPlayersToStart} players.");
-                }
-            }
-
-            // Actualizar botón de ready
-            if (readyButtonText != null)
-                readyButtonText.text = isReady ? "Ready" : "Not Ready";
-
-            UpdatePlayerList();
 
             // Verificar si el jugador actual sigue en el lobby
             CheckIfStillInLobby(lobby);
@@ -276,12 +214,124 @@ public class CurrentLobbyWindow : MonoBehaviour
         }
     }
 
-    private void UpdatePlayerList()
+    private void UpdateLobbyInfo(Lobby lobby)
+    {
+        // Comprobaciones de nulidad seguras
+        if (lobbyNameText != null) lobbyNameText.text = lobby.Name ?? "Unnamed Lobby";
+        if (playerCountText != null) playerCountText.text = $"{lobby.Players?.Count ?? 0}/{lobby.MaxPlayers}";
+        if (lobbyCodeText != null) lobbyCodeText.text = lobby.LobbyCode ?? "No Code";
+
+        // Toggle de privacidad
+        if (isPrivateToggle != null)
+        {
+            isPrivateToggle.isOn = lobby.IsPrivate;
+            isPrivateToggle.interactable = false;
+        }
+
+        // Actualizar mapa
+        if (mapText != null && lobby.Data != null && lobby.Data.ContainsKey(LobbyServiceManager.KEY_MAP))
+        {
+            string currentMap = lobby.Data[LobbyServiceManager.KEY_MAP].Value;
+            mapText.text = currentMap ?? "Unknown";
+
+            for (int i = 0; i < maps.Length; i++)
+            {
+                if (maps[i] == currentMap)
+                {
+                    currentMapIndex = i;
+                    break;
+                }
+            }
+        }
+
+        // Actualizar modo de juego
+        if (gameModeText != null && lobby.Data != null && lobby.Data.ContainsKey(LobbyServiceManager.KEY_GAMEMODE))
+        {
+            string currentGameMode = lobby.Data[LobbyServiceManager.KEY_GAMEMODE].Value;
+            gameModeText.text = currentGameMode ?? "Unknown";
+
+            for (int i = 0; i < gameModes.Length; i++)
+            {
+                if (gameModes[i] == currentGameMode)
+                {
+                    currentGameModeIndex = i;
+                    break;
+                }
+            }
+        }
+
+        bool isHost = LobbyServiceManager.Instance.IsLobbyHost();
+
+        // Configurar visibilidad de controles
+        if (nextMapButton != null) nextMapButton.gameObject.SetActive(isHost);
+        if (previousMapButton != null) previousMapButton.gameObject.SetActive(isHost);
+        if (nextGameModeButton != null) nextGameModeButton.gameObject.SetActive(isHost);
+        if (previousGameModeButton != null) previousGameModeButton.gameObject.SetActive(isHost);
+
+        // Configurar botones de start y ready
+        if (startGameButton != null) startGameButton.gameObject.SetActive(isHost);
+        if (readyButton != null) readyButton.gameObject.SetActive(!isHost);
+
+        // Configurar botones de salida
+        if (exitLobbyButton != null) exitLobbyButton.gameObject.SetActive(!isHost);
+        if (closeLobbyButton != null) closeLobbyButton.gameObject.SetActive(isHost);
+
+        // Actualizar estado del botón de start - considerar mínimo de jugadores
+        if (startGameButton != null)
+        {
+            bool hasEnoughPlayers = HasEnoughPlayersToStart();
+            bool allClientsReady = AreAllClientsReady();
+            startGameButton.interactable = hasEnoughPlayers && allClientsReady;
+        }
+
+        // Actualizar botón de ready
+        if (readyButtonText != null)
+            readyButtonText.text = isReady ? "Ready" : "Not Ready";
+    }
+
+    private bool ShouldUpdatePlayerList(Lobby lobby)
+    {
+        if (lobby?.Players == null) return false;
+
+        // Calcular un hash simple de la lista de jugadores actual
+        string currentHash = CalculatePlayerListHash(lobby);
+        int currentPlayerCount = lobby.Players.Count;
+        string currentHostId = lobby.HostId;
+
+        // Verificar si hay cambios significativos
+        bool hasChanged = currentHash != lastPlayerListHash ||
+                         currentPlayerCount != lastPlayerCount ||
+                         currentHostId != lastHostId;
+
+        if (hasChanged)
+        {
+            // Actualizar las variables de control
+            lastPlayerListHash = currentHash;
+            lastPlayerCount = currentPlayerCount;
+            lastHostId = currentHostId;
+            return true;
+        }
+
+        return false;
+    }
+
+    private string CalculatePlayerListHash(Lobby lobby)
+    {
+        if (lobby?.Players == null) return "";
+
+        // Crear un hash simple basado en IDs de jugadores y sus estados de ready
+        var playerData = lobby.Players.Select(p =>
+            $"{p.Id}:{(p.Data.TryGetValue("IsReady", out var readyData) ? readyData.Value : "false")}"
+        ).OrderBy(x => x);
+
+        return string.Join("|", playerData);
+    }
+
+    private void UpdatePlayerList(Lobby lobby)
     {
         ClearPlayerItems();
 
-        var lobby = LobbyServiceManager.Instance?.JoinedLobby;
-        if (lobby == null || lobby.Players == null) return;
+        if (lobby.Players == null) return;
 
         bool isHost = LobbyServiceManager.Instance.IsLobbyHost();
 
@@ -293,7 +343,7 @@ public class CurrentLobbyWindow : MonoBehaviour
             PlayerItemUI playerItem = playerItemObj.GetComponent<PlayerItemUI>();
             if (playerItem != null)
             {
-                playerItem.Initialize(player, isHost, lobby.HostId);
+                playerItem.Initialize(player, isHost, lobby.HostId, playerIcons);
                 playerItems.Add(playerItem);
             }
         }
@@ -392,7 +442,7 @@ public class CurrentLobbyWindow : MonoBehaviour
     {
         Debug.Log("CurrentLobbyWindow: OnLobbyLeft called");
 
-        // Cerrar la ventana de chat si está activa (independientemente de cómo se salió del lobby)
+        // Cerrar la ventana de chat si está activa
         if (lobbyChatWindow != null && lobbyChatWindow.gameObject.activeInHierarchy)
         {
             Debug.Log("Closing chat window because player left the lobby");
@@ -427,17 +477,14 @@ public class CurrentLobbyWindow : MonoBehaviour
         var lobby = LobbyServiceManager.Instance?.JoinedLobby;
         if (lobby?.Players == null) return false;
 
-        // Verificar si hay al menos el mínimo de jugadores requeridos
         return lobby.Players.Count >= gameSettings.minPlayersToStart;
     }
-
 
     private bool AreAllClientsReady()
     {
         var lobby = LobbyServiceManager.Instance?.JoinedLobby;
         if (lobby?.Players == null) return false;
 
-        // Primero verificar que hay suficientes jugadores
         if (!HasEnoughPlayersToStart()) return false;
 
         foreach (Player player in lobby.Players)
