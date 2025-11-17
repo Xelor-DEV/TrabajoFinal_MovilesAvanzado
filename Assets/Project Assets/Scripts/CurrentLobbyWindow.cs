@@ -34,6 +34,10 @@ public class CurrentLobbyWindow : MonoBehaviour
     [SerializeField] private WindowsController otherModesWindow;
     [SerializeField] private WindowsController lobbyChatWindow;
 
+    [Header("Voice Chat")]
+    [SerializeField] private WindowsController voiceChatWindow;
+    [SerializeField] private Button voiceChatButton;
+
     [Header("Service References")]
     [SerializeField] private FadeManager fadeManager;
     [SerializeField] private GlobalGameSettings gameSettings;
@@ -81,6 +85,7 @@ public class CurrentLobbyWindow : MonoBehaviour
         if (exitLobbyButton != null) exitLobbyButton.onClick.AddListener(LeaveLobby);
         if (closeLobbyButton != null) closeLobbyButton.onClick.AddListener(CloseLobby);
         if (isPrivateToggle != null) isPrivateToggle.onValueChanged.AddListener(OnPrivacyChanged);
+        if (voiceChatButton != null) voiceChatButton.onClick.AddListener(ShowVoiceChatWindow);
 
         // Reinicializar estado
         isReady = false;
@@ -111,6 +116,7 @@ public class CurrentLobbyWindow : MonoBehaviour
         if (exitLobbyButton != null) exitLobbyButton.onClick.RemoveListener(LeaveLobby);
         if (closeLobbyButton != null) closeLobbyButton.onClick.RemoveListener(CloseLobby);
         if (isPrivateToggle != null) isPrivateToggle.onValueChanged.RemoveListener(OnPrivacyChanged);
+        if (voiceChatButton != null) voiceChatButton.onClick.RemoveListener(ShowVoiceChatWindow);
 
         // Desuscribir eventos
         if (LobbyServiceManager.Instance != null)
@@ -186,6 +192,7 @@ public class CurrentLobbyWindow : MonoBehaviour
         OnLobbyLeft();
     }
 
+    // En CurrentLobbyWindow.cs, añade esto al método UpdateUI():
     private void UpdateUI()
     {
         var lobby = LobbyServiceManager.Instance?.JoinedLobby;
@@ -197,21 +204,28 @@ public class CurrentLobbyWindow : MonoBehaviour
 
         try
         {
+            // Actualizar el mapeo de jugadores en VivoxLobbyManager
+            VivoxLobbyManager.Instance.UpdatePlayerMap(lobby);
+
             UpdateLobbyInfo(lobby);
 
-            // Solo actualizar la lista de jugadores si hay cambios significativos
             if (ShouldUpdatePlayerList(lobby))
             {
                 UpdatePlayerList(lobby);
             }
 
-            // Verificar si el jugador actual sigue en el lobby
             CheckIfStillInLobby(lobby);
         }
         catch (System.Exception ex)
         {
             Debug.LogError($"Error in UpdateUI: {ex.Message}\n{ex.StackTrace}");
         }
+    }
+
+    private void ShowVoiceChatWindow()
+    {
+        if (voiceChatWindow != null)
+            voiceChatWindow.ShowWindow();
     }
 
     private void UpdateLobbyInfo(Lobby lobby)
@@ -448,6 +462,14 @@ public class CurrentLobbyWindow : MonoBehaviour
             Debug.Log("Closing chat window because player left the lobby");
             lobbyChatWindow.HideWindow();
         }
+
+        // Cerrar la ventana de voice chat si está activa
+        if (voiceChatWindow != null && voiceChatWindow.gameObject.activeInHierarchy)
+        {
+            Debug.Log("Closing voice chat window because player left the lobby");
+            voiceChatWindow.HideWindow();
+        }
+
 
         // Salir del canal de texto
         await VivoxLobbyManager.Instance.LeaveLobbyChannel();

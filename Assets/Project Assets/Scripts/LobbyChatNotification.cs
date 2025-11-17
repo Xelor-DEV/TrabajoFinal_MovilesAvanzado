@@ -37,6 +37,7 @@ public class LobbyChatNotification : MonoBehaviour
         Debug.Log("LobbyChatNotification: OnEnable - Subscribing to events");
 
         VivoxLobbyManager.Instance.LobbyChatMessageReceived += OnNewMessageReceived;
+        VivoxLobbyManager.Instance.DirectMessageReceived += OnDirectMessageReceived;
         VivoxLobbyManager.Instance.OnLobbyChannelChanged += OnLobbyChannelChanged;
         VivoxLobbyManager.Instance.OnLobbyChannelLeft += OnLobbyChannelLeft;
     }
@@ -48,12 +49,14 @@ public class LobbyChatNotification : MonoBehaviour
         if (VivoxLobbyManager.Instance != null)
         {
             VivoxLobbyManager.Instance.LobbyChatMessageReceived -= OnNewMessageReceived;
+            VivoxLobbyManager.Instance.DirectMessageReceived -= OnDirectMessageReceived;
             VivoxLobbyManager.Instance.OnLobbyChannelChanged -= OnLobbyChannelChanged;
             VivoxLobbyManager.Instance.OnLobbyChannelLeft -= OnLobbyChannelLeft;
         }
 
         currentAnimationSequence?.Kill();
     }
+
 
     private void OnLobbyChannelChanged(string newChannelName)
     {
@@ -84,13 +87,37 @@ public class LobbyChatNotification : MonoBehaviour
         }
     }
 
-    public void ShowMessageNotification(string senderName, string message)
+    private void OnDirectMessageReceived(VivoxMessage message)
+    {
+        Debug.Log($"LobbyChatNotification: Received direct message from {message.SenderDisplayName}: {message.MessageText}");
+
+        // Mostrar notificación para mensajes directos con formato especial
+        ShowDirectMessageNotification(message.SenderDisplayName, message.MessageText);
+    }
+
+    private void ShowDirectMessageNotification(string senderName, string message)
+    {
+        Debug.Log($"LobbyChatNotification: Showing direct message notification - {senderName}: {message}");
+
+        // Usar color magenta para mensajes directos
+        ShowMessageNotification($"[DM] {senderName}", message, Color.magenta);
+    }
+
+    // Modificar el método existente para aceptar color
+    public void ShowMessageNotification(string senderName, string message, Color? textColor = null)
     {
         Debug.Log($"LobbyChatNotification: Showing notification - {senderName}: {message}");
 
         // Actualizar textos
         senderNameText.text = senderName;
         messageText.text = message;
+
+        // Aplicar color si se especifica
+        if (textColor.HasValue)
+        {
+            senderNameText.color = textColor.Value;
+            messageText.color = textColor.Value;
+        }
 
         // Cancelar animación anterior
         currentAnimationSequence?.Kill();
