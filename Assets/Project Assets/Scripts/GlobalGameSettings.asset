@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c68470cebb250c541a9bb0cd64c9edca, type: 3}
   m_Name: GlobalGameSettings
   m_EditorClassIdentifier: 
-  maxGlobalPlayers: 2
+  maxGlobalPlayers: 3
+  minPlayersToStart: 2
   selectableMaps: 0000000001000000
   availableGameModes: 0000000001000000

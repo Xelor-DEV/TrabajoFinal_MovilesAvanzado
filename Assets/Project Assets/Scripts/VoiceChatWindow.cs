@@ -73,7 +73,7 @@ public class VoiceChatWindow : MonoBehaviour
         {
             inputVolumeSlider.onValueChanged.AddListener(OnInputVolumeChanged);
             // Valor por defecto mapeado a 0 dB (centro del rango -50 a +50)
-            inputVolumeSlider.value = 0.5f;
+            inputVolumeSlider.value = 0;
         }
 
         if (muteToggle != null)
@@ -213,8 +213,7 @@ public class VoiceChatWindow : MonoBehaviour
 
     private void OnInputVolumeChanged(float value)
     {
-        // Mapear de 0-1 a -50 a +50
-        int volumeDb = Mathf.RoundToInt(value * 100f - 50f);
+        int volumeDb = Mathf.RoundToInt(value);
         VivoxLobbyManager.Instance.SetInputDeviceVolume(volumeDb);
     }
 

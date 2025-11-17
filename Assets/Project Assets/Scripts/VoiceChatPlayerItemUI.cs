@@ -35,7 +35,7 @@ public class VoiceChatPlayerItemUI : MonoBehaviour
         {
             volumeSlider.onValueChanged.AddListener(OnVolumeChanged);
             // Valor por defecto en el centro (0 dB)
-            volumeSlider.value = 0.5f;
+            volumeSlider.value = 0;
         }
     }
 
@@ -90,9 +90,8 @@ public class VoiceChatPlayerItemUI : MonoBehaviour
 
     private void OnVolumeChanged(float value)
     {
-        // Mapear de 0-1 a -50 a +50
-        int volume = Mathf.RoundToInt(value * 100f - 50f);
-        VivoxLobbyManager.Instance.SetParticipantVolume(participant, volume);
+        int volumeDb = Mathf.RoundToInt(value);
+        VivoxLobbyManager.Instance.SetParticipantVolume(participant, volumeDb);
     }
 
     private void OnDestroy()
