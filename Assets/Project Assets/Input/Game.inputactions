@@ -526,7 +526,7 @@
                 {
                     "name": "",
                     "id": "08e1a245-ff30-4c0e-aad2-329740bc8c1e",
-                    "path": "<AndroidJoystick>/stick",
+                    "path": "<MobileVirtualGamepad>/stick",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Mobile",
@@ -552,6 +552,17 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";KeyboardAndMouse",
+                    "action": "Jump",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "312a20d6-348d-46a7-ba51-b5529c87fa13",
+                    "path": "<MobileVirtualGamepad>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Mobile",
                     "action": "Jump",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -591,6 +602,17 @@
                 },
                 {
                     "name": "",
+                    "id": "2fafb893-2917-4c8c-bb92-380393ee07be",
+                    "path": "<MobileVirtualGamepad>/buttonWest",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Mobile",
+                    "action": "UseItem",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "19d0be7c-363b-46e9-bb50-77a1096f1980",
                     "path": "<Gamepad>/buttonEast",
                     "interactions": "",
@@ -618,6 +640,17 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";KeyboardAndMouse",
+                    "action": "Tackle",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "40c856f8-2ce9-4a8d-a289-6483f25d6b92",
+                    "path": "<MobileVirtualGamepad>/buttonEast",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Mobile",
                     "action": "Tackle",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -658,12 +691,7 @@
             "bindingGroup": "Mobile",
             "devices": [
                 {
-                    "devicePath": "<Pointer>",
-                    "isOptional": false,
-                    "isOR": false
-                },
-                {
-                    "devicePath": "<AndroidJoystick>",
+                    "devicePath": "<MobileVirtualGamepad>",
                     "isOptional": false,
                     "isOR": false
                 }
