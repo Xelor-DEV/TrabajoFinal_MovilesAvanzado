@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c09a675aa4f5d2143a513d65d3297c78, type: 3}
   m_Name: KartStats
   m_EditorClassIdentifier: 
-  maxSpeed: 50
+  maxSpeed: 35
   acceleration: 5
   deceleration: 3
-  drag: 0.98
-  steerSpeed: 20
+  drag: 0.95
+  steerSpeed: 500
   maxTiltZ: 35
   maxTiltX: 20
   visualRotationSpeed: 8

@@ -443,7 +443,7 @@ GameObject:
   - component: {fileID: 55981426}
   - component: {fileID: 55981425}
   - component: {fileID: 55981424}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -22291,7 +22291,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 112
+  m_Constraints: 80
   m_CollisionDetection: 0
 --- !u!114 &799221777
 MonoBehaviour:
@@ -22308,7 +22308,6 @@ MonoBehaviour:
   kartStats: {fileID: 11400000, guid: a2d80d2dc873ce74ab45f5ee221ef0a3, type: 2}
   rb: {fileID: 799221775}
   modelChild: {fileID: 1587659505}
-  cameraReference: {fileID: 0}
 --- !u!65 &799221778
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -40630,8 +40629,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1740402446}
   - component: {fileID: 1740402445}
+  - component: {fileID: 1740402449}
   - component: {fileID: 1740402448}
-  - component: {fileID: 1740402447}
   m_Layer: 0
   m_Name: CinemachineCamera
   m_TagString: Untagged
@@ -40655,7 +40654,7 @@ MonoBehaviour:
     Enabled: 0
     m_Value: 0
   OutputChannel: 1
-  StandbyUpdate: 2
+  StandbyUpdate: 1
   m_StreamingVersion: 20241001
   m_LegacyPriority: 0
   Target:
@@ -40666,7 +40665,7 @@ MonoBehaviour:
     FieldOfView: 60.000004
     OrthographicSize: 5
     NearClipPlane: 0.3
-    FarClipPlane: 1000
+    FarClipPlane: 100
     Dutch: 0
     ModeOverride: 0
     PhysicalProperties:
@@ -40690,14 +40689,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1740402444}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.08167223, y: 0, z: 0, w: 0.9966593}
-  m_LocalPosition: {x: 0.06, y: 2.36, z: 0.86000013}
+  m_LocalRotation: {x: 0.10507694, y: 0, z: 0, w: 0.9944641}
+  m_LocalPosition: {x: 0.06, y: 2.46, z: 1.4000001}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1740402447
+--- !u!114 &1740402448
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -40709,8 +40708,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e8b78ac948f05a46a6d8339a503172b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  LookAtOffset: {x: 0, y: 1.7, z: 0}
---- !u!114 &1740402448
+  LookAtOffset: {x: 0, y: 1.4, z: 1.5}
+--- !u!114 &1740402449
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -40724,11 +40723,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   TrackerSettings:
     BindingMode: 3
-    PositionDamping: {x: 1, y: 1, z: 1}
+    PositionDamping: {x: 0.6, y: 0.6, z: 0.6}
     AngularDampingMode: 0
-    RotationDamping: {x: 1, y: 1, z: 1}
+    RotationDamping: {x: 1, y: 0.8, z: 1}
     QuaternionDamping: 1
-  FollowOffset: {x: 0, y: 2.36, z: -4}
+  FollowOffset: {x: 0, y: 2.46, z: -3.46}
 --- !u!1 &1747289876
 GameObject:
   m_ObjectHideFlags: 0
@@ -40881,7 +40880,7 @@ GameObject:
   - component: {fileID: 1752935565}
   - component: {fileID: 1752935564}
   - component: {fileID: 1752935563}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -46130,7 +46129,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1801022157}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: CameraTarget
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -46145,7 +46144,7 @@ Transform:
   m_GameObject: {fileID: 1801022156}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 1.85, z: 1.06}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -47598,7 +47597,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 1000
+  far clip plane: 100
   field of view: 60.000004
   orthographic: 0
   orthographic size: 5
@@ -47625,8 +47624,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1891102312}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.08167223, y: 0, z: 0, w: 0.9966593}
-  m_LocalPosition: {x: 0.06, y: 2.36, z: 0.86000013}
+  m_LocalRotation: {x: 0.10507694, y: 0, z: 0, w: 0.9944641}
+  m_LocalPosition: {x: 0.06, y: 2.46, z: 1.4000001}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

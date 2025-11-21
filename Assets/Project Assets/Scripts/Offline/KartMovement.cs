@@ -9,20 +9,18 @@ public class KartMovement : MonoBehaviour
     [Header("References")]
     [SerializeField] private Rigidbody rb;
     [SerializeField] private Transform modelChild;
-    [SerializeField] private Transform cameraReference;
 
     // Movement variables
     private Vector2 input;
     private Vector3 currentVisualRotation;
-    private Vector3 cameraForward;
-    private Vector3 cameraRight;
+    private Vector3 moveDirection;
+    private bool isMovingForward = true;
 
     private void Awake()
     {
         // Get references if not set in inspector
         if (rb == null) rb = GetComponent<Rigidbody>();
         if (modelChild == null) modelChild = transform.Find("Model");
-        if (cameraReference == null) cameraReference = Camera.main.transform;
 
         // Configure Rigidbody
         if (rb != null)
@@ -42,6 +40,7 @@ public class KartMovement : MonoBehaviour
     private void Update()
     {
         HandleVisualRotations();
+        UpdateMovementDirection();
     }
 
     private void FixedUpdate()
@@ -50,41 +49,50 @@ public class KartMovement : MonoBehaviour
         ApplyDragAndLimits();
     }
 
-    private void LateUpdate()
+    private void UpdateMovementDirection()
     {
-        UpdateCameraVectors();
-    }
+        // Determinar si estamos avanzando o retrocediendo
+        isMovingForward = input.y >= 0;
 
-    private void UpdateCameraVectors()
-    {
-        cameraForward = Vector3.ProjectOnPlane(cameraReference.forward, Vector3.up).normalized;
-        cameraRight = Vector3.ProjectOnPlane(cameraReference.right, Vector3.up).normalized;
-    }
-
-    private void HandleMovement()
-    {
-        // Only move if there's forward/backward input
+        // Calcular direcci�n de movimiento basada en la rotaci�n actual del kart
         if (Mathf.Abs(input.y) > 0.1f)
         {
-            // Calculate movement direction based on camera
-            Vector3 moveDirection = (cameraForward * input.y + cameraRight * input.x).normalized;
+            moveDirection = transform.forward * input.y;
 
-            // Apply velocity in the movement direction
-            Vector3 targetVelocity = moveDirection * kartStats.maxSpeed * Mathf.Abs(input.y);
-            rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, targetVelocity, kartStats.acceleration * Time.fixedDeltaTime);
-
-            // Only rotate if we're moving forward/backward
-            if (rb.linearVelocity.magnitude > 0.5f)
+            // Aplicar direcci�n lateral solo si hay movimiento forward/backward
+            if (Mathf.Abs(input.x) > 0.1f)
             {
-                float steerInput = input.x;
-                Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, kartStats.steerSpeed * Mathf.Abs(steerInput) * Time.fixedDeltaTime);
+                // Para el movimiento arcade, aplicamos rotaci�n directamente al transform
+                float rotationAmount = input.x * kartStats.steerSpeed * Time.fixedDeltaTime;
+
+                if (isMovingForward)
+                {
+                    // Rotaci�n normal cuando avanzamos
+                    transform.Rotate(0, rotationAmount, 0);
+                }
+                else
+                {
+                    // Rotaci�n invertida cuando retrocedemos (como en Mario Kart)
+                    transform.Rotate(0, -rotationAmount, 0);
+                }
             }
         }
         else
         {
-            // Slow down when no input
-            rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, kartStats.deceleration * Time.fixedDeltaTime);
+            moveDirection = Vector3.zero;
+        }
+    }
+
+    private void HandleMovement()
+    {
+        if (moveDirection != Vector3.zero)
+        {
+            // Calcular velocidad objetivo
+            float targetSpeed = kartStats.maxSpeed * Mathf.Abs(input.y);
+            Vector3 targetVelocity = moveDirection * targetSpeed;
+
+            // Aplicar aceleraci�n suave
+            rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, targetVelocity, kartStats.acceleration * Time.fixedDeltaTime);
         }
     }
 
@@ -94,11 +102,19 @@ public class KartMovement : MonoBehaviour
 
         Vector3 targetEuler = Vector3.zero;
 
-        // Z-axis: Banking during turns
+        // Z-axis: Banking durante los giros
         targetEuler.z = Mathf.Clamp(-input.x * kartStats.maxTiltZ, -kartStats.maxTiltZ, kartStats.maxTiltZ);
 
-        // X-axis: Pitch during acceleration/braking
-        targetEuler.x = Mathf.Clamp(-input.y * kartStats.maxTiltX, -kartStats.maxTiltX, kartStats.maxTiltX);
+        // X-axis: Pitch durante aceleraci�n/frenado
+        if (isMovingForward)
+        {
+            targetEuler.x = Mathf.Clamp(-input.y * kartStats.maxTiltX, -kartStats.maxTiltX, kartStats.maxTiltX);
+        }
+        else
+        {
+            // Invertir el pitch cuando retrocedemos
+            targetEuler.x = Mathf.Clamp(input.y * kartStats.maxTiltX, -kartStats.maxTiltX, kartStats.maxTiltX);
+        }
 
         // Smooth interpolation
         currentVisualRotation = Vector3.Lerp(currentVisualRotation, targetEuler, Time.deltaTime * kartStats.visualRotationSpeed);
@@ -109,16 +125,27 @@ public class KartMovement : MonoBehaviour
 
     private void ApplyDragAndLimits()
     {
-        // Apply drag when not accelerating
+        // Aplicar drag cuando no hay input
         if (Mathf.Abs(input.y) < 0.1f)
         {
             rb.linearVelocity *= kartStats.drag;
         }
 
-        // Limit maximum speed
+        // Limitar velocidad m�xima
         if (rb.linearVelocity.magnitude > kartStats.maxSpeed)
         {
             rb.linearVelocity = rb.linearVelocity.normalized * kartStats.maxSpeed;
         }
+    }
+
+    // M�todo p�blico para obtener informaci�n del movimiento
+    public float GetCurrentSpeed()
+    {
+        return rb.linearVelocity.magnitude;
+    }
+
+    public bool IsMovingForward()
+    {
+        return isMovingForward;
     }
 }
