@@ -19,7 +19,7 @@ MonoBehaviour:
   acceleration: 5
   deceleration: 3
   steerSpeed: 280
-  minSteerSpeed: 1
+  minSteerSpeed: 0.5
   minInputThreshold: 0.001
   maxTiltZ: 35
   maxTiltX: 20
