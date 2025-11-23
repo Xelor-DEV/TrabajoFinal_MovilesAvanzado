@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Events;
 
 public class KartMovement : MonoBehaviour
 {
@@ -15,12 +16,19 @@ public class KartMovement : MonoBehaviour
     private Vector3 currentVisualRotation;
     private bool isMovingForward = true;
 
+    // Boost variables
+    [SerializeField] private float boostTimer;
+    [SerializeField] private bool isBoosted;
+
+    // Events para comunicación
+    public UnityEvent<float, float, bool> OnMovementUpdate; // speed, inputY, isBoosted
+
     // Properties
     public float CurrentSpeed { get { return rb.linearVelocity.magnitude; } }
+    public bool IsBoosted { get { return isBoosted; } }
 
     private void Awake()
     {
-        // Get references if not set in inspector
         if (rb == null) rb = GetComponent<Rigidbody>();
         if (modelChild == null) modelChild = transform.Find("Model");
 
@@ -35,8 +43,6 @@ public class KartMovement : MonoBehaviour
         rb.mass = kartStats.mass;
         rb.linearDamping = kartStats.linearDrag;
         rb.angularDamping = kartStats.angularDrag;
-
-        // Freeze rotation on X and Z axes for stability
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
     }
 
@@ -49,6 +55,10 @@ public class KartMovement : MonoBehaviour
     {
         UpdateMovementState();
         HandleVisualRotations();
+        HandleBoostSystem();
+
+        // Disparar evento para animaciones
+        OnMovementUpdate?.Invoke(CurrentSpeed, input.y, isBoosted);
     }
 
     private void FixedUpdate()
@@ -63,30 +73,56 @@ public class KartMovement : MonoBehaviour
         isMovingForward = input.y >= 0;
     }
 
-    private void HandleMovement()
+    private void HandleBoostSystem()
     {
-        if (Mathf.Abs(input.y) > kartStats.minInputThreshold)
-        {
-            Vector3 moveDirection = transform.forward * input.y;
-            Vector3 targetVelocity = moveDirection * kartStats.maxSpeed;
+        bool shouldActivateBoost = input.y >= kartStats.boostActivationInput;
+        bool shouldDeactivateBoost = input.y < kartStats.boostDeactivationInput;
 
-            // Apply acceleration
-            rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, targetVelocity, kartStats.acceleration * Time.fixedDeltaTime);
+        if (shouldActivateBoost)
+        {
+            boostTimer += Time.deltaTime;
+            if (boostTimer >= kartStats.boostTimeThreshold)
+            {
+                isBoosted = true;
+            }
         }
         else
         {
-            // Apply deceleration when no input
-            rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, kartStats.deceleration * Time.fixedDeltaTime);
+            if (shouldDeactivateBoost)
+            {
+                isBoosted = false;
+                boostTimer = 0f;
+            }
+        }
+    }
+
+    private void HandleMovement()
+    {
+        float currentMaxSpeed = isBoosted ? kartStats.boostedMaxSpeed : kartStats.maxSpeed;
+        float currentDeceleration = isBoosted ? kartStats.boostedDeceleration : kartStats.deceleration;
+
+        if (Mathf.Abs(input.y) > kartStats.minInputThreshold)
+        {
+            Vector3 moveDirection = transform.forward * input.y;
+            Vector3 targetVelocity = moveDirection * currentMaxSpeed;
+
+            rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, targetVelocity,
+                kartStats.acceleration * Time.fixedDeltaTime);
+        }
+        else
+        {
+            rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero,
+                currentDeceleration * Time.fixedDeltaTime);
         }
     }
 
     private void HandleSteering()
     {
-        // Only steer if we're moving and have steering input
         if (CurrentSpeed > kartStats.minSteerSpeed && Mathf.Abs(input.x) > kartStats.minInputThreshold)
         {
             float rotationMultiplier = isMovingForward ? 1f : -1f;
-            float rotationAmount = input.x * kartStats.steerSpeed * rotationMultiplier * Time.fixedDeltaTime;
+            float currentSteerSpeed = isBoosted ? kartStats.boostedSteerSpeed : kartStats.steerSpeed;
+            float rotationAmount = input.x * currentSteerSpeed * rotationMultiplier * Time.fixedDeltaTime;
 
             transform.Rotate(0, rotationAmount, 0);
         }
@@ -98,32 +134,36 @@ public class KartMovement : MonoBehaviour
 
         Vector3 targetEuler = Vector3.zero;
 
-        // Z-axis: Banking during turns
+        float boostMultiplier = isBoosted ? 1.2f : 1f;
+
         if (Mathf.Abs(input.x) > kartStats.minInputThreshold)
         {
-            targetEuler.z = -input.x * kartStats.maxTiltZ;
+            targetEuler.z = -input.x * kartStats.maxTiltZ * boostMultiplier;
         }
 
-        // X-axis: Pitch during acceleration/braking
         if (Mathf.Abs(input.y) > kartStats.minInputThreshold)
         {
-            float pitchDirection = isMovingForward ? -1f : 1f;
-            targetEuler.x = input.y * pitchDirection * kartStats.maxTiltX;
+            targetEuler.x = Mathf.Abs(input.y) * kartStats.maxTiltX * boostMultiplier;
+
+            if (!isMovingForward)
+            {
+                targetEuler.x = -targetEuler.x;
+            }
         }
 
-        // Smooth interpolation
         currentVisualRotation = Vector3.Lerp(currentVisualRotation, targetEuler,
             kartStats.visualRotationSpeed * Time.deltaTime);
 
-        // Apply smooth rotation
         modelChild.localRotation = Quaternion.Euler(currentVisualRotation);
     }
 
     private void ApplySpeedLimit()
     {
-        if (rb.linearVelocity.magnitude > kartStats.maxSpeed)
+        float currentMaxSpeed = isBoosted ? kartStats.boostedMaxSpeed : kartStats.maxSpeed;
+
+        if (rb.linearVelocity.magnitude > currentMaxSpeed)
         {
-            rb.linearVelocity = rb.linearVelocity.normalized * kartStats.maxSpeed;
+            rb.linearVelocity = rb.linearVelocity.normalized * currentMaxSpeed;
         }
     }
 }

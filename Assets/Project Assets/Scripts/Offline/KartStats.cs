@@ -22,4 +22,12 @@ public class KartStats : ScriptableObject
     public float maxTiltZ = 35f;
     public float maxTiltX = 20f;
     public float visualRotationSpeed = 10f;
+
+    [Header("Boost Settings")]
+    public float boostTimeThreshold = 15f;
+    public float boostActivationInput = 0.8f;
+    public float boostDeactivationInput = 0.8f;
+    public float boostedMaxSpeed = 35f;
+    public float boostedSteerSpeed = 1.5f;
+    public float boostedDeceleration = 2f;
 }

@@ -24,3 +24,9 @@ MonoBehaviour:
   maxTiltZ: 35
   maxTiltX: 20
   visualRotationSpeed: 10
+  boostTimeThreshold: 8
+  boostActivationInput: 0.35
+  boostDeactivationInput: 0.3
+  boostedMaxSpeed: 30
+  boostedSteerSpeed: 230
+  boostedDeceleration: 1
