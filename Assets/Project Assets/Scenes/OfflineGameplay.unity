@@ -22447,6 +22447,7 @@ GameObject:
   - component: {fileID: 799221778}
   - component: {fileID: 799221774}
   - component: {fileID: 799221779}
+  - component: {fileID: 799221784}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -22518,7 +22519,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 799221784}
         m_TargetAssemblyTypeName: KartTackle, Assembly-CSharp
         m_MethodName: OnSteerInput
         m_Mode: 0
@@ -22554,7 +22555,7 @@ MonoBehaviour:
     m_ActionName: 'Gameplay/UseItem[/Keyboard/e,/Mouse/rightButton]'
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 799221784}
         m_TargetAssemblyTypeName: KartTackle, Assembly-CSharp
         m_MethodName: OnTackleInput
         m_Mode: 0
@@ -22810,6 +22811,65 @@ MonoBehaviour:
   pivot: {fileID: 823263268}
   entity: 0
   isTargetable: 1
+--- !u!114 &799221784
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 799221772}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0fa7f45cf068ac24b93b50329132ddd1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetEntity: 0
+  obstacleEntity: 1
+  tackleDistance: 30
+  tackleSpeed: 40
+  tackleSteerSpeed: 10
+  tackleCooldown: 2
+  pushForceSpeed: 30
+  pushDistance: 15
+  OnDisableControl:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 799221777}
+        m_TargetAssemblyTypeName: KartMovement, Assembly-CSharp
+        m_MethodName: set_enabled
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  OnEnableControl:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 799221777}
+        m_TargetAssemblyTypeName: KartMovement, Assembly-CSharp
+        m_MethodName: set_enabled
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+  OnTackleStart:
+    m_PersistentCalls:
+      m_Calls: []
+  OnHitTarget:
+    m_PersistentCalls:
+      m_Calls: []
+  OnHitObstacle:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &802932741
 GameObject:
   m_ObjectHideFlags: 0

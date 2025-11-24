@@ -3,34 +3,37 @@ using UnityEngine.InputSystem;
 using UnityEngine.Events;
 using System.Collections;
 
-[RequireComponent(typeof(Rigidbody))]
-[RequireComponent(typeof(EntityIdentifier))]
 public class KartTackle : MonoBehaviour
 {
     [Header("Configuración de Tackleada")]
     [SerializeField] private Entity targetEntity = Entity.Kart;
     [SerializeField] private Entity obstacleEntity = Entity.Wall;
-    [SerializeField] private float tackleDistance = 50f; // Distancia a recorrer
-    [SerializeField] private float tackleSpeed = 40f;    // Velocidad durante tackle
-    [SerializeField] private float tackleSteerSpeed = 10f; // Giro reducido (difícil girar)
+    [SerializeField] private float tackleDistance = 50f;   // Distancia máxima si no choca
+    [SerializeField] private float tackleSpeed = 40f;      // Velocidad del dash
+    [SerializeField] private float tackleSteerSpeed = 10f; // Giro muy reducido
     [SerializeField] private float tackleCooldown = 2f;
 
     [Header("Configuración de Impacto (Knockback)")]
-    [SerializeField] private float pushForceSpeed = 30f; // Velocidad a la que sale despedido el objetivo
-    [SerializeField] private float pushDistance = 15f;   // Distancia que recorrerá el objetivo empujado
+    [SerializeField] private float pushForceSpeed = 30f; // Velocidad a la que sale volando el rival
+    [SerializeField] private float pushDistance = 15f;   // Distancia que recorre el rival
 
-    [Header("Eventos")]
-    public UnityEvent OnTackleStart;
-    public UnityEvent OnTackleEnd;
-    public UnityEvent OnHitTarget; // Golpeó un Kart
-    public UnityEvent OnHitObstacle; // Golpeó una Pared
-    public UnityEvent<bool> OnTackleStateChanged; // Para desactivar otros scripts (True=Tackling, False=Normal)
+    [Header("Eventos de Control (Para el Inspector)")]
+    [Tooltip("Invocado al iniciar tackleada o recibir golpe. Úsalo para DESACTIVAR KartMovement.")]
+    public UnityEvent OnDisableControl;
 
-    // Referencias y Estado
+    [Tooltip("Invocado al terminar tackleada o golpe. Úsalo para ACTIVAR KartMovement.")]
+    public UnityEvent OnEnableControl;
+
+    [Header("Eventos de Juego")]
+    public UnityEvent OnTackleStart;     // Solo cuando TU haces la tackleada
+    public UnityEvent OnHitTarget;       // Cuando chocas con un Kart
+    public UnityEvent OnHitObstacle;     // Cuando chocas con una Pared
+
+    // Referencias y Estado interno
     private Rigidbody rb;
     private Vector2 moveInput;
-    private bool isTackling = false;
-    private bool isKnockedBack = false;
+    private bool isActionActive = false; // True si está tacleando o siendo empujado
+    private bool isTackling = false;     // True solo si está atacando
     private bool canTackle = true;
     private Coroutine currentActionCoroutine;
 
@@ -39,55 +42,53 @@ public class KartTackle : MonoBehaviour
         rb = GetComponent<Rigidbody>();
     }
 
-    // --- INPUT METHODS ---
+    // --- INPUT METHODS (Conectar al PlayerInput) ---
 
-    // Asigna esto en tu PlayerInput (Button South / X)
     public void OnTackleInput(InputAction.CallbackContext context)
     {
-        if (context.performed && canTackle && !isTackling && !isKnockedBack)
+        // Solo puede taclear si presionó el botón, tiene cooldown y no está haciendo otra acción
+        if (context.performed && canTackle && !isActionActive)
         {
             StartCoroutine(PerformTackleRoutine());
         }
     }
 
-    // Asigna esto en tu PlayerInput (Stick Left / WASD) - Necesitamos saber si intenta girar
     public void OnSteerInput(InputAction.CallbackContext context)
     {
         moveInput = context.ReadValue<Vector2>();
     }
 
-    // --- LOGIC: PERFORM TACKLE ---
+    // --- LÓGICA DE TACLEADA (ATACANTE) ---
 
     private IEnumerator PerformTackleRoutine()
     {
+        isActionActive = true;
         isTackling = true;
         canTackle = false;
 
-        // Notificar a otros sistemas (ej: apagar KartMovement normal)
-        OnTackleStateChanged?.Invoke(true);
+        // Eventos
+        OnDisableControl?.Invoke(); // Desactiva movimiento normal
         OnTackleStart?.Invoke();
 
         Vector3 startPosition = transform.position;
         float traveledDistance = 0f;
 
-        // Bucle de movimiento de Tackleada
+        // Bucle físico de la tackleada
         while (traveledDistance < tackleDistance && isTackling)
         {
-            // 1. Movimiento forzado hacia adelante
+            // 1. Velocidad forzada hacia adelante
             Vector3 velocity = transform.forward * tackleSpeed;
-            // Mantener la velocidad Y actual (gravedad) para no volar si cae
-            velocity.y = rb.linearVelocity.y;
+            velocity.y = rb.linearVelocity.y; // Respetar gravedad
             rb.linearVelocity = velocity;
 
-            // 2. Giro dificultoso (Steering limitado)
+            // 2. Giro difícil (muy lento comparado al normal)
             if (Mathf.Abs(moveInput.x) > 0.01f)
             {
                 float rotationAmount = moveInput.x * tackleSteerSpeed * Time.fixedDeltaTime;
                 transform.Rotate(0, rotationAmount, 0);
             }
 
-            // 3. Calcular distancia recorrida
-            // Usamos distancia horizontal para ignorar caídas
+            // 3. Calcular distancia (solo horizontal)
             Vector3 currentPosFlat = new Vector3(transform.position.x, 0, transform.position.z);
             Vector3 startPosFlat = new Vector3(startPosition.x, 0, startPosition.z);
             traveledDistance = Vector3.Distance(startPosFlat, currentPosFlat);
@@ -107,113 +108,103 @@ public class KartTackle : MonoBehaviour
         if (!isTackling) return;
 
         isTackling = false;
-        rb.linearVelocity = Vector3.zero; // Frenado en seco al terminar
+        isActionActive = false;
+        rb.linearVelocity = Vector3.zero; // Frenado seco
 
-        OnTackleEnd?.Invoke();
-        OnTackleStateChanged?.Invoke(false); // Reactivar movimiento normal
+        OnEnableControl?.Invoke(); // Devuelve el control al jugador
     }
 
-    // --- LOGIC: COLLISIONS ---
+    // --- LÓGICA DE COLISIONES ---
 
     private void OnCollisionEnter(Collision collision)
     {
-        // Solo nos importa procesar colisiones si estamos haciendo una tackleada o siendo empujados
-        if (!isTackling && !isKnockedBack) return;
+        // Si no estamos haciendo nada especial, ignorar lógica compleja
+        if (!isActionActive) return;
 
         EntityIdentifier otherEntity = collision.gameObject.GetComponent<EntityIdentifier>();
 
-        // Si no tiene identificador, lo tratamos como pared genérica si estamos tackleando
+        // Si chocamos con algo sin identidad mientras tacleamos, tratarlo como pared
         if (otherEntity == null)
         {
-            if (isTackling || isKnockedBack) StopMomentumHitWall();
+            if (isTackling) HandleWallCollision();
+            // Si estamos siendo empujados (knockback) y chocamos pared, también paramos
+            else if (isActionActive) StopKnockback();
             return;
         }
 
-        // LÓGICA SI ESTOY TACKLEANDO
+        // SI YO ESTOY ATACANDO (TACKLE)
         if (isTackling)
         {
-            // 1. Choque con OBJETIVO (Kart)
+            // Caso A: Choqué con el OBJETIVO (Kart)
             if (otherEntity.Entity == targetEntity)
             {
-                // Aplicar empuje al objetivo
                 KartTackle otherTackleScript = collision.gameObject.GetComponent<KartTackle>();
+
+                // Aplicar fuerza al otro
                 if (otherTackleScript != null)
                 {
-                    // Calculamos la dirección del empuje (nuestro forward)
                     otherTackleScript.ApplyKnockback(transform.forward, pushForceSpeed, pushDistance);
                 }
                 else
                 {
-                    // Fallback si el otro no tiene script de tackle, usar físicas puras
+                    // Fallback para objetos con física simple
                     Rigidbody otherRb = collision.rigidbody;
                     if (otherRb) otherRb.AddForce(transform.forward * pushForceSpeed, ForceMode.Impulse);
                 }
 
                 OnHitTarget?.Invoke();
-                StopTackle(); // Me detengo inmediatamente
+                StopTackle(); // Yo me detengo al impactar
             }
-            // 2. Choque con OBSTÁCULO (Pared)
+            // Caso B: Choqué con una PARED (Obstáculo)
             else if (otherEntity.Entity == obstacleEntity)
             {
-                OnHitObstacle?.Invoke();
-                StopTackle(); // Me detengo inmediatamente
+                HandleWallCollision();
             }
         }
-
-        // LÓGICA SI ESTOY SIENDO EMPUJADO (Knockback)
-        if (isKnockedBack)
+        // SI YO ESTOY SIENDO EMPUJADO (KNOCKBACK)
+        else
         {
-            // Si choco con una pared mientras me empujan, paro en seco
-            if (otherEntity.Entity == obstacleEntity || otherEntity.Entity == Entity.None)
+            // Si choco pared mientras vuelo, me detengo
+            if (otherEntity.Entity == obstacleEntity)
             {
                 StopKnockback();
             }
         }
     }
 
-    private void StopMomentumHitWall()
+    private void HandleWallCollision()
     {
-        if (isTackling)
-        {
-            OnHitObstacle?.Invoke();
-            StopTackle();
-        }
-        if (isKnockedBack)
-        {
-            StopKnockback();
-        }
+        OnHitObstacle?.Invoke();
+        StopTackle();
     }
 
-    // --- LOGIC: RECEIVE KNOCKBACK (Ser empujado) ---
+    // --- LÓGICA DE RECIBIR GOLPE (VÍCTIMA) ---
 
+    // Método público llamado por el atacante
     public void ApplyKnockback(Vector3 direction, float speed, float distance)
     {
-        // Detener cualquier acción actual
         if (currentActionCoroutine != null) StopCoroutine(currentActionCoroutine);
-
-        // Iniciar rutina de ser empujado
         currentActionCoroutine = StartCoroutine(KnockbackRoutine(direction.normalized, speed, distance));
     }
 
     private IEnumerator KnockbackRoutine(Vector3 direction, float speed, float distance)
     {
-        isKnockedBack = true;
-        isTackling = false; // Cancelar tackle si me golpean mientras lo hago
+        isActionActive = true;
+        isTackling = false; // Si estaba atacando, se cancela mi ataque
 
-        // Desactivar controles normales
-        OnTackleStateChanged?.Invoke(true);
+        OnDisableControl?.Invoke(); // Pierdo el control
 
         Vector3 startPosition = transform.position;
         float traveledDistance = 0f;
 
-        while (traveledDistance < distance && isKnockedBack)
+        while (traveledDistance < distance && isActionActive)
         {
-            // Moverse en la dirección del golpe
+            // Moverse forzosamente en dirección del golpe
             Vector3 velocity = direction * speed;
-            velocity.y = rb.linearVelocity.y; // Preservar gravedad
+            velocity.y = rb.linearVelocity.y;
             rb.linearVelocity = velocity;
 
-            // Calcular distancia recorrida
+            // Calcular distancia
             Vector3 currentPosFlat = new Vector3(transform.position.x, 0, transform.position.z);
             Vector3 startPosFlat = new Vector3(startPosition.x, 0, startPosition.z);
             traveledDistance = Vector3.Distance(startPosFlat, currentPosFlat);
@@ -226,25 +217,17 @@ public class KartTackle : MonoBehaviour
 
     private void StopKnockback()
     {
-        isKnockedBack = false;
+        isActionActive = false;
         rb.linearVelocity = Vector3.zero;
-        OnTackleStateChanged?.Invoke(false); // Devolver control al jugador
+        OnEnableControl?.Invoke(); // Recupero el control
     }
 
-    // --- VISUALS ---
+    // --- VISUALIZACIÓN EN EDITOR ---
 
-    private void OnDrawGizmos()
+    private void OnDrawGizmosSelected()
     {
-        if (isTackling)
-        {
-            Gizmos.color = Color.red;
-            Gizmos.DrawLine(transform.position, transform.position + transform.forward * tackleDistance);
-        }
-        else
-        {
-            // Dibujar rango visualización
-            Gizmos.color = new Color(1, 0.5f, 0, 0.3f);
-            Gizmos.DrawRay(transform.position, transform.forward * tackleDistance);
-        }
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawRay(transform.position, transform.forward * tackleDistance);
+        Gizmos.DrawWireSphere(transform.position + transform.forward * tackleDistance, 0.5f);
     }
 }
