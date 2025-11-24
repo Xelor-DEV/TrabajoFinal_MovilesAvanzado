@@ -22,6 +22,7 @@ public class KartMovement : MonoBehaviour
 
     // Events para comunicación
     public UnityEvent<float, float, bool> OnMovementUpdate; // speed, inputY, isBoosted
+    public UnityEvent<Vector2> OnVFXUpdate; // input (x,y)
 
     // Properties
     public float CurrentSpeed { get { return rb.linearVelocity.magnitude; } }
@@ -59,6 +60,7 @@ public class KartMovement : MonoBehaviour
 
         // Disparar evento para animaciones
         OnMovementUpdate?.Invoke(CurrentSpeed, input.y, isBoosted);
+        OnVFXUpdate?.Invoke(input);
     }
 
     private void FixedUpdate()

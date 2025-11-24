@@ -30,3 +30,4 @@ MonoBehaviour:
   boostedMaxSpeed: 30
   boostedSteerSpeed: 230
   boostedDeceleration: 1
+  speedParticlesInputThreshold: 0.4

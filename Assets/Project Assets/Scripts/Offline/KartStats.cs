@@ -30,4 +30,7 @@ public class KartStats : ScriptableObject
     public float boostedMaxSpeed = 35f;
     public float boostedSteerSpeed = 1.5f;
     public float boostedDeceleration = 2f;
+
+    [Header("VFX Settings")]
+    public float speedParticlesInputThreshold = 0.8f;
 }

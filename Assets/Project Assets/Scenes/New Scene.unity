@@ -3515,7 +3515,7 @@ Transform:
   m_GameObject: {fileID: 213242929}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.124, y: 0, z: -0.17299962}
+  m_LocalPosition: {x: 0.124, y: 0, z: -0.019999743}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5554,7 +5554,7 @@ Transform:
   m_GameObject: {fileID: 356379200}
   serializedVersion: 2
   m_LocalRotation: {x: -0.95586634, y: -0.039314996, z: -0.15093261, w: 0.24898449}
-  m_LocalPosition: {x: 0.374, y: 0, z: -0.737}
+  m_LocalPosition: {x: 0.124, y: 0, z: -0.020999908}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5720,7 +5720,7 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0.8
+      scalar: 0.4
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -6599,8 +6599,8 @@ ParticleSystem:
           inWeight: 0.33333334
           outWeight: 0.33333334
         - serializedVersion: 3
-          time: 0.15075108
-          value: 1
+          time: 0.10529515
+          value: 0.5849056
           inSlope: -0.0000010573733
           outSlope: -0.0000010573733
           tangentMode: 0
@@ -6930,10 +6930,10 @@ ParticleSystem:
       maxColor: {r: 1, g: 1, b: 1, a: 1}
       maxGradient:
         serializedVersion: 2
-        key0: {r: 1, g: 1, b: 1, a: 0.07058824}
-        key1: {r: 0.084905684, g: 0.084905684, b: 0.084905684, a: 0.023529412}
-        key2: {r: 0.3490566, g: 0.3490566, b: 0.3490566, a: 0}
-        key3: {r: 0, g: 0, b: 0, a: 0}
+        key0: {r: 1, g: 1, b: 1, a: 1}
+        key1: {r: 0.084905684, g: 0.084905684, b: 0.084905684, a: 1}
+        key2: {r: 0.3490566, g: 0.3490566, b: 0.3490566, a: 1}
+        key3: {r: 0, g: 0, b: 0, a: 1}
         key4: {r: 0, g: 0, b: 0, a: 0}
         key5: {r: 0, g: 0, b: 0, a: 0}
         key6: {r: 0, g: 0, b: 0, a: 0}
@@ -6948,8 +6948,8 @@ ParticleSystem:
         ctime7: 0
         atime0: 0
         atime1: 32626
-        atime2: 65535
-        atime3: 0
+        atime2: 64957
+        atime3: 64957
         atime4: 0
         atime5: 0
         atime6: 0
@@ -15640,7 +15640,6 @@ GameObject:
   - component: {fileID: 652379044}
   - component: {fileID: 652379043}
   - component: {fileID: 652379042}
-  - component: {fileID: 652379041}
   m_Layer: 0
   m_Name: Plane (2)
   m_TagString: Untagged
@@ -15648,28 +15647,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!64 &652379041
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 652379040}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!23 &652379042
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -22237,7 +22214,6 @@ GameObject:
   - component: {fileID: 772721557}
   - component: {fileID: 772721556}
   - component: {fileID: 772721555}
-  - component: {fileID: 772721554}
   m_Layer: 0
   m_Name: Plane
   m_TagString: Untagged
@@ -22245,28 +22221,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!64 &772721554
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 772721553}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!23 &772721555
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -22485,11 +22439,13 @@ GameObject:
   m_Component:
   - component: {fileID: 799221773}
   - component: {fileID: 799221777}
+  - component: {fileID: 799221780}
+  - component: {fileID: 799221781}
+  - component: {fileID: 799221782}
   - component: {fileID: 799221775}
   - component: {fileID: 799221778}
   - component: {fileID: 799221774}
   - component: {fileID: 799221779}
-  - component: {fileID: 799221780}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -22506,7 +22462,7 @@ Transform:
   m_GameObject: {fileID: 799221772}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.06, y: 0, z: 4.86}
+  m_LocalPosition: {x: 0.06, y: 0, z: 10.38}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -22514,6 +22470,7 @@ Transform:
   - {fileID: 1737512109}
   - {fileID: 171196492}
   - {fileID: 603313107}
+  - {fileID: 928942069}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &799221774
@@ -22562,7 +22519,19 @@ MonoBehaviour:
     m_ActionId: 7ae1a0af-7afb-40b7-84fc-a9e55fe79d8a
     m_ActionName: 'Gameplay/Move[/Keyboard/w,/Keyboard/s,/Keyboard/a,/Keyboard/d]'
   - m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 799221782}
+        m_TargetAssemblyTypeName: KartJump, Assembly-CSharp
+        m_MethodName: OnJump
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_ActionId: ab3c984a-ceab-4312-b5c2-f35ee95f4d82
     m_ActionName: 'Gameplay/Jump[/Keyboard/space]'
   - m_PersistentCalls:
@@ -22586,9 +22555,9 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 799221772}
   serializedVersion: 4
-  m_Mass: 100
+  m_Mass: 1
   m_Drag: 0
-  m_AngularDrag: 2
+  m_AngularDrag: 0
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -22602,9 +22571,9 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_Constraints: 80
-  m_CollisionDetection: 0
+  m_CollisionDetection: 2
 --- !u!114 &799221777
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -22628,6 +22597,21 @@ MonoBehaviour:
       - m_Target: {fileID: 799221780}
         m_TargetAssemblyTypeName: KartAnimationController, Assembly-CSharp
         m_MethodName: HandleMovementData
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  OnVFXUpdate:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 799221781}
+        m_TargetAssemblyTypeName: KartVFX, Assembly-CSharp
+        m_MethodName: HandleVFXData
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -22695,6 +22679,95 @@ MonoBehaviour:
   animator: {fileID: 799221779}
   boostAnimationSpeed: 2
   animationSmoothTime: 0.1
+  speed: Speed
+  grounded: Grounded
+  jumping: Jumping
+  falling: Falling
+--- !u!114 &799221781
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 799221772}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0fe6edc0d44700b46944fbb3e36ce5ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  nitroLeftParticles: {fileID: 1339856963}
+  nitroRightParticles: {fileID: 705464615}
+  nitroLight: {fileID: 1059875740}
+  lightFadeSpeed: 2
+  driftLeftTrail: {fileID: 1352205983}
+  driftRightTrail: {fileID: 213242931}
+  speedLeftParticles: {fileID: 1776670872}
+  speedRightParticles: {fileID: 356379203}
+  kartStats: {fileID: 11400000, guid: a2d80d2dc873ce74ab45f5ee221ef0a3, type: 2}
+--- !u!114 &799221782
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 799221772}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 305880bf9dd0c17458707519e9e29486, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  jumpHeight: 10
+  groundCheckDistance: 0.3
+  groundLayerMask:
+    serializedVersion: 2
+    m_Bits: 64
+  groundCheckPoint: {fileID: 928942069}
+  rb: {fileID: 799221775}
+  OnGroundedStateChanged:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 799221780}
+        m_TargetAssemblyTypeName: KartAnimationController, Assembly-CSharp
+        m_MethodName: HandleGroundedStateChanged
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  OnJumpingStateChanged:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 799221780}
+        m_TargetAssemblyTypeName: KartAnimationController, Assembly-CSharp
+        m_MethodName: HandleJumpingStateChanged
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  OnFallingStateChanged:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 799221780}
+        m_TargetAssemblyTypeName: KartAnimationController, Assembly-CSharp
+        m_MethodName: HandleFallingStateChanged
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &802932741
 GameObject:
   m_ObjectHideFlags: 0
@@ -24361,6 +24434,37 @@ Transform:
   - {fileID: 135873994}
   - {fileID: 1522345045}
   m_Father: {fileID: 1917011473}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &928942068
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 928942069}
+  m_Layer: 0
+  m_Name: GroundPivot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &928942069
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 928942068}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 799221773}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &946686830
 GameObject:
@@ -35476,7 +35580,7 @@ Transform:
   m_GameObject: {fileID: 1352205981}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.124, y: 0, z: -0.173}
+  m_LocalPosition: {x: -0.124, y: 0, z: -0.02}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -41179,7 +41283,6 @@ GameObject:
   - component: {fileID: 1734175441}
   - component: {fileID: 1734175440}
   - component: {fileID: 1734175439}
-  - component: {fileID: 1734175438}
   m_Layer: 0
   m_Name: Plane (1)
   m_TagString: Untagged
@@ -41187,28 +41290,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!64 &1734175438
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1734175437}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!23 &1734175439
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -41386,7 +41467,7 @@ Transform:
   m_GameObject: {fileID: 1740402444}
   serializedVersion: 2
   m_LocalRotation: {x: 0.0693013, y: 0, z: 0, w: 0.9975958}
-  m_LocalPosition: {x: 0.06, y: 1.8, z: 1.7800002}
+  m_LocalPosition: {x: 0.06, y: 1.8, z: 7.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -41839,7 +41920,7 @@ Transform:
   m_GameObject: {fileID: 1776670869}
   serializedVersion: 2
   m_LocalRotation: {x: -0.955866, y: 0.039315514, z: 0.15093453, w: 0.24898466}
-  m_LocalPosition: {x: -0.374, y: 0, z: -0.737}
+  m_LocalPosition: {x: -0.124, y: 0, z: -0.021}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -42005,7 +42086,7 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0.8
+      scalar: 0.4
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -42884,8 +42965,8 @@ ParticleSystem:
           inWeight: 0.33333334
           outWeight: 0.33333334
         - serializedVersion: 3
-          time: 0.15075108
-          value: 1
+          time: 0.10529515
+          value: 0.5849056
           inSlope: -0.0000010573733
           outSlope: -0.0000010573733
           tangentMode: 0
@@ -43215,10 +43296,10 @@ ParticleSystem:
       maxColor: {r: 1, g: 1, b: 1, a: 1}
       maxGradient:
         serializedVersion: 2
-        key0: {r: 1, g: 1, b: 1, a: 0.07058824}
-        key1: {r: 0.084905684, g: 0.084905684, b: 0.084905684, a: 0.023529412}
-        key2: {r: 0.3490566, g: 0.3490566, b: 0.3490566, a: 0}
-        key3: {r: 0, g: 0, b: 0, a: 0}
+        key0: {r: 1, g: 1, b: 1, a: 1}
+        key1: {r: 0.084905684, g: 0.084905684, b: 0.084905684, a: 1}
+        key2: {r: 0.3490566, g: 0.3490566, b: 0.3490566, a: 1}
+        key3: {r: 0, g: 0, b: 0, a: 1}
         key4: {r: 0, g: 0, b: 0, a: 0}
         key5: {r: 0, g: 0, b: 0, a: 0}
         key6: {r: 0, g: 0, b: 0, a: 0}
@@ -43233,8 +43314,8 @@ ParticleSystem:
         ctime7: 0
         atime0: 0
         atime1: 32626
-        atime2: 65535
-        atime3: 0
+        atime2: 64957
+        atime3: 64957
         atime4: 0
         atime5: 0
         atime6: 0
@@ -48290,7 +48371,7 @@ Transform:
   m_GameObject: {fileID: 1891102312}
   serializedVersion: 2
   m_LocalRotation: {x: 0.0693013, y: 0, z: 0, w: 0.9975958}
-  m_LocalPosition: {x: 0.06, y: 1.8, z: 1.7800002}
+  m_LocalPosition: {x: 0.06, y: 1.8, z: 7.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

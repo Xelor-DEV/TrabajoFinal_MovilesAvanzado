@@ -9,6 +9,12 @@ public class KartAnimationController : MonoBehaviour
     [SerializeField] private float boostAnimationSpeed = 1.5f;
     [SerializeField] private float animationSmoothTime = 0.1f;
 
+    [Header("Animation Parameters")]
+    [SerializeField] private string speed = "Speed";
+    [SerializeField] private string grounded = "Grounded";
+    [SerializeField] private string jumping = "Jumping";
+    [SerializeField] private string falling = "Falling";
+
     private float currentAnimationSpeed = 0f;
 
     private void HandleMovementData(float speed, float inputY, bool isBoosted)
@@ -33,7 +39,7 @@ public class KartAnimationController : MonoBehaviour
         }
 
         // Establecer el parámetro en el Animator
-        animator.SetFloat("Speed", currentAnimationSpeed);
+        animator.SetFloat(this.speed, currentAnimationSpeed);
     }
 
     private float CalculateAnimationSpeedFromInput(float inputY)
@@ -48,5 +54,26 @@ public class KartAnimationController : MonoBehaviour
         }
 
         return animationValue;
+    }
+
+    public void HandleGroundedStateChanged(bool isGrounded)
+    {
+        if (animator == null) return;
+
+        animator.SetBool(grounded, isGrounded);
+    }
+
+    public void HandleJumpingStateChanged(bool isJumping)
+    {
+        if (animator == null) return;
+
+        animator.SetBool(jumping, isJumping);
+    }
+
+    public void HandleFallingStateChanged(bool isFalling)
+    {
+        if (animator == null) return;
+
+        animator.SetBool(falling, isFalling);
     }
 }
