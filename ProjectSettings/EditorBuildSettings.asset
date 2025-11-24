@@ -6,8 +6,8 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Project Assets/Scenes/OfflineGameplay.unity
-    guid: 02722bcadd7753a44aa33049d9cc6f6c
+    path: Assets/Project Assets/Scenes/HacerMapa.unity
+    guid: 37e8b47ed618e8d4288ba22262994f34
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: dbfc82c9aaa4f46469f429a59f159c2c, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
