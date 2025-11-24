@@ -6,7 +6,7 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Project Assets/Scenes/New Scene.unity
+    path: Assets/Project Assets/Scenes/OfflineGameplay.unity
     guid: 02722bcadd7753a44aa33049d9cc6f6c
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: dbfc82c9aaa4f46469f429a59f159c2c, type: 2}

@@ -8,6 +8,7 @@ public class KartJump : MonoBehaviour
     [SerializeField] private float jumpHeight = 5f;
     [SerializeField] private float groundCheckRadius = 0.3f; // Usaremos esto como radio de la esfera
     [SerializeField] private LayerMask groundLayerMask = 1;
+    [SerializeField] private float gravityMultiplier = 3.0f;
 
     [Header("References")]
     [SerializeField] private Transform groundCheckPoint;
@@ -27,6 +28,7 @@ public class KartJump : MonoBehaviour
     {
         CheckGrounded();
         UpdateJumpStates();
+        ApplyExtraGravity(); // NUEVO
     }
 
     public void OnJump(InputAction.CallbackContext context)
@@ -91,7 +93,12 @@ public class KartJump : MonoBehaviour
     private void Jump()
     {
         Vector3 velocity = rb.linearVelocity;
-        velocity.y = Mathf.Sqrt(jumpHeight * -2f * Physics.gravity.y);
+
+        // Usamos la gravedad modificada en la formula para asegurar que llegamos a la altura deseada
+        // a pesar de que ahora la gravedad es mas fuerte.
+        float gravityStrength = Physics.gravity.y * gravityMultiplier;
+
+        velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravityStrength);
         rb.linearVelocity = velocity;
 
         SetJumpingState(true);
@@ -112,6 +119,18 @@ public class KartJump : MonoBehaviour
         {
             isFalling = falling;
             OnFallingStateChanged?.Invoke(isFalling);
+        }
+    }
+
+    private void ApplyExtraGravity()
+    {
+        // Si estamos cayendo (velocidad Y negativa) o simplemente no estamos en el suelo
+        if (!isGrounded)
+        {
+            // Aplicamos fuerza extra hacia abajo. 
+            // Multiplicamos por (gravityMultiplier - 1) porque la física ya aplica 1x gravedad por defecto.
+            Vector3 extraGravityForce = Physics.gravity * (gravityMultiplier - 1);
+            rb.AddForce(extraGravityForce, ForceMode.Acceleration);
         }
     }
 

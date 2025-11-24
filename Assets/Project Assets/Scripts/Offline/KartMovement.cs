@@ -98,23 +98,42 @@ public class KartMovement : MonoBehaviour
         }
     }
 
+    // En KartMovement.cs
+
     private void HandleMovement()
     {
         float currentMaxSpeed = isBoosted ? kartStats.boostedMaxSpeed : kartStats.maxSpeed;
         float currentDeceleration = isBoosted ? kartStats.boostedDeceleration : kartStats.deceleration;
 
+        // Guardamos la velocidad vertical actual para no perderla
+        float currentVerticalSpeed = rb.linearVelocity.y;
+
+        // Calculamos solo la velocidad horizontal actual
+        Vector3 currentHorizontalVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
+
         if (Mathf.Abs(input.y) > kartStats.minInputThreshold)
         {
             Vector3 moveDirection = transform.forward * input.y;
-            Vector3 targetVelocity = moveDirection * currentMaxSpeed;
+            // Aseguramos que la dirección no tenga inclinación vertical
+            moveDirection.y = 0;
+            moveDirection.Normalize();
 
-            rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, targetVelocity,
+            Vector3 targetHorizontalVelocity = moveDirection * currentMaxSpeed;
+
+            // Hacemos Lerp solo en horizontal
+            Vector3 newHorizontalVelocity = Vector3.Lerp(currentHorizontalVelocity, targetHorizontalVelocity,
                 kartStats.acceleration * Time.fixedDeltaTime);
+
+            // Reasignamos la velocidad combinando la nueva horizontal + la vertical original
+            rb.linearVelocity = new Vector3(newHorizontalVelocity.x, currentVerticalSpeed, newHorizontalVelocity.z);
         }
         else
         {
-            rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero,
+            // Deceleración solo horizontal
+            Vector3 newHorizontalVelocity = Vector3.Lerp(currentHorizontalVelocity, Vector3.zero,
                 currentDeceleration * Time.fixedDeltaTime);
+
+            rb.linearVelocity = new Vector3(newHorizontalVelocity.x, currentVerticalSpeed, newHorizontalVelocity.z);
         }
     }
 
