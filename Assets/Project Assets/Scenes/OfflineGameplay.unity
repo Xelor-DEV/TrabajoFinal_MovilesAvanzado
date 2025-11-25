@@ -46692,8 +46692,8 @@ MonoBehaviour:
     m_Reference: {fileID: 0}
   m_PlayerPrefab: {fileID: 2542570559312412626, guid: 5e7c643cf28585c4eaacf55eb5db5c91, type: 3}
   m_SplitScreen: 1
-  m_MaintainAspectRatioInSplitScreen: 1
-  m_FixedNumberOfSplitScreens: 2
+  m_MaintainAspectRatioInSplitScreen: 0
+  m_FixedNumberOfSplitScreens: -1
   m_SplitScreenRect:
     serializedVersion: 2
     x: 0
@@ -52746,7 +52746,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2542570559312412626, guid: 5e7c643cf28585c4eaacf55eb5db5c91, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4862339937128980879, guid: 5e7c643cf28585c4eaacf55eb5db5c91, type: 3}
       propertyPath: m_LocalPosition.x
