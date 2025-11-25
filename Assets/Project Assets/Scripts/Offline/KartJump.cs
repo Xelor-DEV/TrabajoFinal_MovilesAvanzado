@@ -23,6 +23,7 @@ public class KartJump : MonoBehaviour
     private bool isGrounded = false; // Empezar en false es más seguro
     private bool isJumping = false;
     private bool isFalling = false;
+    private bool isTackling = false; // NUEVO: Estado de tackleada
 
     private void FixedUpdate()
     {
@@ -33,6 +34,9 @@ public class KartJump : MonoBehaviour
 
     public void OnJump(InputAction.CallbackContext context)
     {
+        // NUEVO: No saltar si está tackleando
+        if (isTackling) return;
+
         if (context.performed && isGrounded)
         {
             Jump();
@@ -132,6 +136,12 @@ public class KartJump : MonoBehaviour
             Vector3 extraGravityForce = Physics.gravity * (gravityMultiplier - 1);
             rb.AddForce(extraGravityForce, ForceMode.Acceleration);
         }
+    }
+
+    // NUEVO MÉTODO: Para controlar estado de tackleada
+    public void SetTackling(bool tackling)
+    {
+        isTackling = tackling;
     }
 
     private void OnDrawGizmos()
