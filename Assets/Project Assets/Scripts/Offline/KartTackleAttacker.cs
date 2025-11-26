@@ -21,15 +21,19 @@ public class KartTackleAttacker : MonoBehaviour
     [Header("Events")]
     public UnityEvent OnTackleStarted;
     public UnityEvent OnTackleEnded;
+    public UnityEvent OnCooldownStarted;  // Nuevo evento para cuando inicia el cooldown
+    public UnityEvent OnCooldownFinished; // Nuevo evento para cuando termina el cooldown
 
     // State variables
     private bool isTackling = false;
     private bool canTackle = true;
     private Coroutine tackleCoroutine;
+    private Coroutine cooldownCoroutine;
 
     // Properties
     public bool IsTackling => isTackling;
     public bool CanTackle => canTackle;
+    public float TackleCooldown => tackleCooldown;
 
     private void Awake()
     {
@@ -57,7 +61,7 @@ public class KartTackleAttacker : MonoBehaviour
         isTackling = true;
         canTackle = false;
 
-        // Activar eventos - estos se conectarán en el inspector
+        // Activar eventos
         OnTackleStarted?.Invoke();
 
         // Aplicar fuerza inicial de tackleada
@@ -73,17 +77,31 @@ public class KartTackleAttacker : MonoBehaviour
     private void EndTackle()
     {
         isTackling = false;
-
-        // Activar eventos - estos se conectarán en el inspector
         OnTackleEnded?.Invoke();
 
-        StartCoroutine(CooldownRoutine());
+        // Iniciar cooldown después de que termina la tackleada
+        StartCooldown();
+    }
+
+    private void StartCooldown()
+    {
+        if (cooldownCoroutine != null) StopCoroutine(cooldownCoroutine);
+        cooldownCoroutine = StartCoroutine(CooldownRoutine());
     }
 
     private IEnumerator CooldownRoutine()
     {
+        // Notificar que inicia el cooldown
+        OnCooldownStarted?.Invoke();
+
+        // Esperar el tiempo de cooldown
         yield return new WaitForSeconds(tackleCooldown);
+
+        // Permitir tacklear de nuevo
         canTackle = true;
+
+        // Notificar que terminó el cooldown
+        OnCooldownFinished?.Invoke();
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -129,5 +147,17 @@ public class KartTackleAttacker : MonoBehaviour
         }
 
         EndTackle();
+    }
+
+    // Método para forzar el fin del cooldown (por si acaso)
+    public void ForceEndCooldown()
+    {
+        if (cooldownCoroutine != null)
+        {
+            StopCoroutine(cooldownCoroutine);
+            cooldownCoroutine = null;
+        }
+        canTackle = true;
+        OnCooldownFinished?.Invoke();
     }
 }
