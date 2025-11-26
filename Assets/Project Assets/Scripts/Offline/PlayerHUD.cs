@@ -19,10 +19,12 @@ public class PlayerHUD : MonoBehaviour
     [Header("Race Info References")]
     [SerializeField] private TMP_Text positionText;
     [SerializeField] private TMP_Text positionSuffixText;
-    [SerializeField] private TMP_Text lapsText;
 
     [Header("Message References")]
     [SerializeField] private TMP_Text centerMessageText;
+
+    [Header("Spell References")]
+    [SerializeField] private Image spellIcon;
 
     // State variables
     private bool isCooldownActive = false;
@@ -166,12 +168,6 @@ public class PlayerHUD : MonoBehaviour
 
             positionSuffixText.text = suffix;
         }
-    }
-
-    public void UpdateLaps(int currentLap, int totalLaps)
-    {
-        if (lapsText != null)
-            lapsText.text = $"{currentLap}/{totalLaps}";
     }
 
     public void ShowCenterMessage(string message, float duration = 0f)

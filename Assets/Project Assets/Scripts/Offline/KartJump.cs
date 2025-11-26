@@ -6,9 +6,13 @@ public class KartJump : MonoBehaviour
 {
     [Header("Jump Settings")]
     [SerializeField] private float jumpHeight = 5f;
-    [SerializeField] private float groundCheckRadius = 0.3f; // Usaremos esto como radio de la esfera
+    [SerializeField] private float groundCheckRadius = 0.3f;
     [SerializeField] private LayerMask groundLayerMask = 1;
     [SerializeField] private float gravityMultiplier = 3.0f;
+
+    [Header("Coyote Time")]
+    [SerializeField] private float coyoteTimeDuration = 0.15f;
+    [SerializeField] private bool showCoyoteTimeGizmo = true;
 
     [Header("References")]
     [SerializeField] private Transform groundCheckPoint;
@@ -20,24 +24,28 @@ public class KartJump : MonoBehaviour
     public UnityEvent<bool> OnFallingStateChanged;
 
     // State variables
-    private bool isGrounded = false; // Empezar en false es más seguro
+    private bool isGrounded = false;
     private bool isJumping = false;
     private bool isFalling = false;
-    private bool isTackling = false; // NUEVO: Estado de tackleada
+    private bool isTackling = false;
+
+    // Coyote Time variables
+    private float coyoteTimer = 0f;
+    private bool wasGroundedLastFrame = false;
 
     private void FixedUpdate()
     {
         CheckGrounded();
+        UpdateCoyoteTime();
         UpdateJumpStates();
-        ApplyExtraGravity(); // NUEVO
+        ApplyExtraGravity();
     }
 
     public void OnJump(InputAction.CallbackContext context)
     {
-        // NUEVO: No saltar si está tackleando
         if (isTackling) return;
 
-        if (context.performed && isGrounded)
+        if (context.performed && (isGrounded || coyoteTimer > 0))
         {
             Jump();
         }
@@ -45,13 +53,10 @@ public class KartJump : MonoBehaviour
 
     private void CheckGrounded()
     {
-        bool wasGrounded = isGrounded;
+        wasGroundedLastFrame = isGrounded;
 
         if (groundCheckPoint != null)
         {
-            // CAMBIO CLAVE: Usamos CheckSphere en lugar de Raycast.
-            // CheckSphere devuelve true si hay CUALQUIER colisionador de la capa suelo
-            // dentro de este radio, incluso si el punto está hundido bajo tierra.
             isGrounded = Physics.CheckSphere(
                 groundCheckPoint.position,
                 groundCheckRadius,
@@ -60,9 +65,28 @@ public class KartJump : MonoBehaviour
             );
         }
 
-        if (wasGrounded != isGrounded)
+        if (wasGroundedLastFrame != isGrounded)
         {
             OnGroundedStateChanged?.Invoke(isGrounded);
+        }
+    }
+
+    private void UpdateCoyoteTime()
+    {
+        // Activar Coyote Time cuando se sale del suelo
+        if (wasGroundedLastFrame && !isGrounded)
+        {
+            coyoteTimer = coyoteTimeDuration;
+        }
+        // Reducir el timer si está activo
+        else if (coyoteTimer > 0)
+        {
+            coyoteTimer -= Time.fixedDeltaTime;
+        }
+        // Resetear si se vuelve a tocar el suelo
+        else if (isGrounded)
+        {
+            coyoteTimer = 0f;
         }
     }
 
@@ -78,7 +102,6 @@ public class KartJump : MonoBehaviour
         }
         else
         {
-            // rb.linearVelocity para Unity 6
             bool shouldBeFalling = rb.linearVelocity.y <= 0;
 
             if (shouldBeFalling && !isFalling)
@@ -97,15 +120,13 @@ public class KartJump : MonoBehaviour
     private void Jump()
     {
         Vector3 velocity = rb.linearVelocity;
-
-        // Usamos la gravedad modificada en la formula para asegurar que llegamos a la altura deseada
-        // a pesar de que ahora la gravedad es mas fuerte.
         float gravityStrength = Physics.gravity.y * gravityMultiplier;
 
         velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravityStrength);
         rb.linearVelocity = velocity;
 
         SetJumpingState(true);
+        coyoteTimer = 0f; // Consumir Coyote Time al saltar
     }
 
     private void SetJumpingState(bool jumping)
@@ -128,17 +149,13 @@ public class KartJump : MonoBehaviour
 
     private void ApplyExtraGravity()
     {
-        // Si estamos cayendo (velocidad Y negativa) o simplemente no estamos en el suelo
         if (!isGrounded)
         {
-            // Aplicamos fuerza extra hacia abajo. 
-            // Multiplicamos por (gravityMultiplier - 1) porque la física ya aplica 1x gravedad por defecto.
             Vector3 extraGravityForce = Physics.gravity * (gravityMultiplier - 1);
             rb.AddForce(extraGravityForce, ForceMode.Acceleration);
         }
     }
 
-    // NUEVO MÉTODO: Para controlar estado de tackleada
     public void SetTackling(bool tackling)
     {
         isTackling = tackling;
@@ -148,12 +165,22 @@ public class KartJump : MonoBehaviour
     {
         if (groundCheckPoint != null)
         {
-            // Visualizamos la esfera de detección real
+            // Gizmo para detección normal de suelo
             Gizmos.color = isGrounded ? new Color(0, 1, 0, 0.5f) : new Color(1, 0, 0, 0.5f);
             Gizmos.DrawSphere(groundCheckPoint.position, groundCheckRadius);
 
             Gizmos.color = isGrounded ? Color.green : Color.red;
             Gizmos.DrawWireSphere(groundCheckPoint.position, groundCheckRadius);
+
+            // Gizmo para Coyote Time
+            if (showCoyoteTimeGizmo && coyoteTimer > 0)
+            {
+                Gizmos.color = new Color(1, 0.5f, 0, 0.3f); // Naranja transparente
+                Gizmos.DrawSphere(groundCheckPoint.position, groundCheckRadius * 1.2f);
+
+                Gizmos.color = new Color(1, 0.5f, 0, 1f); // Naranja sólido
+                Gizmos.DrawWireSphere(groundCheckPoint.position, groundCheckRadius * 1.2f);
+            }
         }
     }
 }
