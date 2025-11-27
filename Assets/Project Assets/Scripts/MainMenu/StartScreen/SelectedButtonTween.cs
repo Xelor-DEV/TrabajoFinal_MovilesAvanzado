@@ -3,7 +3,7 @@ using UnityEngine.EventSystems;
 using DG.Tweening;
 using UnityEngine.UI;
 
-public class SelectedButtonTween : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
+public class SelectedButtonTween : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler, ISelectHandler, IDeselectHandler
 {
     [Header("Tween Settings")]
     [SerializeField] private float highlightedScale = 1.1f;
@@ -14,6 +14,7 @@ public class SelectedButtonTween : MonoBehaviour, IPointerEnterHandler, IPointer
     private Vector3 originalScale;
     private Tween currentTween;
     private bool isHighlighted = false;
+    private bool isSelected = false;
     private Button button;
 
     private void Awake()
@@ -27,6 +28,7 @@ public class SelectedButtonTween : MonoBehaviour, IPointerEnterHandler, IPointer
         currentTween?.Kill();
         transform.localScale = originalScale;
         isHighlighted = false;
+        isSelected = false;
     }
 
     private bool IsButtonInteractable()
@@ -39,8 +41,7 @@ public class SelectedButtonTween : MonoBehaviour, IPointerEnterHandler, IPointer
         if (!IsButtonInteractable()) return;
 
         isHighlighted = true;
-        currentTween?.Kill();
-        currentTween = transform.DOScale(originalScale * highlightedScale, scaleDuration).SetEase(easeType);
+        ApplyHighlightedTween();
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -48,28 +49,67 @@ public class SelectedButtonTween : MonoBehaviour, IPointerEnterHandler, IPointer
         if (!IsButtonInteractable()) return;
 
         isHighlighted = false;
-        currentTween?.Kill();
-        currentTween = transform.DOScale(originalScale, scaleDuration).SetEase(easeType);
+        if (!isSelected)
+        {
+            ApplyNormalTween();
+        }
+    }
+
+    public void OnSelect(BaseEventData eventData)
+    {
+        if (!IsButtonInteractable()) return;
+
+        isSelected = true;
+        ApplyHighlightedTween();
+    }
+
+    public void OnDeselect(BaseEventData eventData)
+    {
+        if (!IsButtonInteractable()) return;
+
+        isSelected = false;
+        if (!isHighlighted)
+        {
+            ApplyNormalTween();
+        }
     }
 
     public void OnPointerDown(PointerEventData eventData)
     {
         if (!IsButtonInteractable()) return;
 
-        currentTween?.Kill();
-        currentTween = transform.DOScale(originalScale * pressedScale, scaleDuration * 0.5f).SetEase(Ease.OutQuad);
+        ApplyPressedTween();
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
         if (!IsButtonInteractable()) return;
 
+        if (isHighlighted || isSelected)
+        {
+            ApplyHighlightedTween();
+        }
+        else
+        {
+            ApplyNormalTween();
+        }
+    }
+
+    private void ApplyHighlightedTween()
+    {
         currentTween?.Kill();
+        currentTween = transform.DOScale(originalScale * highlightedScale, scaleDuration).SetEase(easeType);
+    }
 
-        Vector3 targetScale = isHighlighted ?
-            originalScale * highlightedScale :
-            originalScale;
+    private void ApplyNormalTween()
+    {
+        currentTween?.Kill();
+        currentTween = transform.DOScale(originalScale, scaleDuration).SetEase(easeType);
+    }
 
-        currentTween = transform.DOScale(targetScale, scaleDuration).SetEase(easeType);
+    private void ApplyPressedTween()
+    {
+        currentTween?.Kill();
+        currentTween = transform.DOScale(originalScale * pressedScale, scaleDuration * 0.5f).SetEase(Ease.OutQuad);
     }
 }
