@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Unity.Cinemachine; // Necesario para Cinemachine 3.x
+using Unity.Cinemachine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -18,6 +18,10 @@ public class GameInitializer : MonoBehaviour
     [Tooltip("Tiempo de espera antes de iniciar la cuenta regresiva")]
     [SerializeField] private float graceTimeDuration = 5f;
 
+    [Header("Split Screen Configuration")]
+    [Tooltip("Si es TRUE: Jugador 1 Arriba, Jugador 2 Abajo. Si es FALSE: Izquierda/Derecha. (Solo afecta a 2 jugadores)")]
+    [SerializeField] private bool splitScreenTopBottom = true;
+
     private List<PlayerInput> _spawnedPlayers = new List<PlayerInput>();
     private List<PlayerHUD> _playerHUDs = new List<PlayerHUD>();
 
@@ -34,52 +38,121 @@ public class GameInitializer : MonoBehaviour
 
         playerInputManager.joinBehavior = PlayerJoinBehavior.JoinPlayersManually;
 
-        if (!playerInputManager.splitScreen)
-            playerInputManager.splitScreen = true;
+        // Cuando lo hacemos manual, a veces es mejor desactivar la lógica automática
+        // de split screen del manager para evitar conflictos, ya que nosotros controlaremos los rects.
+        playerInputManager.splitScreen = false;
     }
 
     private void SpawnPlayers()
     {
         if (matchData == null || gridManager == null) return;
 
-        // Iterar solo sobre los jugadores que se asignaron en el menú anterior
-        for (int i = 0; i < matchData.assignedPlayers.Count; i++)
+        int totalPlayers = matchData.assignedPlayers.Count;
+
+        for (int i = 0; i < totalPlayers; i++)
         {
             PlayerAssignment assignment = matchData.assignedPlayers[i];
-
-            // 1. Obtener punto de spawn
             Transform spawnPoint = gridManager.GetSpawnPoint(i);
 
-            // 2. Instanciar el Prefab manualmente
+            // 1. Instanciar
             GameObject playerInstance = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
 
-            // 3. Configurar PlayerInput
+            // 2. Configurar Input
             PlayerInput pInput = playerInstance.GetComponent<PlayerInput>();
             if (pInput != null)
             {
-                // Asignar el dispositivo y esquema de control guardado
                 pInput.SwitchCurrentControlScheme(assignment.controlScheme, assignment.device);
-
-                // Desactivar movimiento inicialmente
                 pInput.DeactivateInput();
-
                 _spawnedPlayers.Add(pInput);
             }
 
-            // 4. Configurar HUD
+            // 3. Configurar HUD
             PlayerHUD hud = playerInstance.GetComponent<PlayerHUD>();
-            if (hud != null)
-            {
-                _playerHUDs.Add(hud);
-            }
+            if (hud != null) _playerHUDs.Add(hud);
 
-            // 5. Configurar CameraSystem y Channels
+            // 4. Configurar CameraSystem, Channels y VIEWPORT (Pantalla partida)
             CameraSystem camSystem = playerInstance.GetComponent<CameraSystem>();
             if (camSystem != null)
             {
                 SetupCameraChannels(camSystem, i);
+                ConfigureCameraViewport(camSystem.CM, i, totalPlayers);
+                camSystem.Canvas.worldCamera = camSystem.CM;
+                camSystem.Canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.None;
+
+                // Buscamos el AudioListener en la cámara referenciada por CameraSystem
+                AudioListener listener = camSystem.CM.GetComponent<AudioListener>();
+
+                // Si existe y NO es el primer jugador (i > 0), lo eliminamos.
+                if (listener != null && i > 0)
+                {
+                    Destroy(listener);
+                }
             }
         }
+    }
+
+    private void ConfigureCameraViewport(Camera cam, int playerIndex, int totalPlayers)
+    {
+        if (cam == null) return;
+
+        // Declaramos las variables UNA SOLA VEZ aquí arriba para evitar el error CS0136.
+        // X, Y = Posición inicial (0 a 1)
+        // W, H = Ancho y Alto (0 a 1)
+        float rectX, rectY, rectW, rectH;
+
+        // --- CASO 1: SOLO 2 JUGADORES ---
+        if (totalPlayers == 2)
+        {
+            if (splitScreenTopBottom)
+            {
+                // MODO: ARRIBA / ABAJO
+                rectX = 0f;
+                rectW = 1f;
+                rectH = 0.5f;
+                // Si es P1 (index 0) Y=0.5 (Arriba), Si es P2 Y=0 (Abajo)
+                rectY = (playerIndex == 0) ? 0.5f : 0f;
+            }
+            else
+            {
+                // MODO: IZQUIERDA / DERECHA
+                rectY = 0f;
+                rectH = 1f;
+                rectW = 0.5f;
+                // Si es P1 (index 0) X=0 (Izq), Si es P2 X=0.5 (Der)
+                rectX = (playerIndex == 0) ? 0f : 0.5f;
+            }
+        }
+        // --- CASO 2: 3 O MÁS JUGADORES (GRID AUTOMÁTICO) ---
+        else
+        {
+            // Calculamos columnas y filas
+            int cols = Mathf.CeilToInt(Mathf.Sqrt(totalPlayers));
+            int rows = Mathf.CeilToInt((float)totalPlayers / cols);
+
+            // Ajuste estético para 5 y 6 jugadores (3 columnas x 2 filas se ve mejor en monitores anchos)
+            if (totalPlayers >= 5 && totalPlayers <= 6)
+            {
+                cols = 3;
+                rows = 2;
+            }
+
+            rectW = 1f / cols;
+            rectH = 1f / rows;
+
+            // Calculamos posición en la grilla
+            int colIndex = playerIndex % cols;
+            int rowIndex = playerIndex / cols;
+
+            // Invertimos la fila porque Unity UI (0,0) es abajo-izquierda, 
+            // pero queremos que el Jugador 1 empiece arriba-izquierda.
+            int invertedRowIndex = (rows - 1) - rowIndex;
+
+            rectX = colIndex * rectW;
+            rectY = invertedRowIndex * rectH;
+        }
+
+        // Aplicamos el rectángulo final a la cámara
+        cam.rect = new Rect(rectX, rectY, rectW, rectH);
     }
 
     private void SetupCameraChannels(CameraSystem camSys, int playerIndex)
@@ -89,43 +162,26 @@ public class GameInitializer : MonoBehaviour
 
         if (brain != null && vCam != null)
         {
-            // Crear una máscara de canal única por jugador.
-            // Channel01 -> 1 << 0
-            // Channel02 -> 1 << 1
-            // etc.
             OutputChannels channelMask = (OutputChannels)(1 << playerIndex);
-
-            // Asignar al Brain (qué canales VE esta cámara)
             brain.ChannelMask = channelMask;
-
-            // Asignar a la Virtual Camera (en qué canal EMITE esta cámara)
             vCam.OutputChannel = channelMask;
         }
     }
 
     private IEnumerator RaceCountdownRoutine()
     {
-        // 1. Tiempo de Gracia (Nadie se mueve)
         yield return new WaitForSeconds(graceTimeDuration);
-
-        // 2. Cuenta Regresiva (3, 2, 1)
         int countdown = 3;
         while (countdown > 0)
         {
             ShowMessageToAllPlayers(countdown.ToString(), 0.8f);
-            // Sonido opcional aquí
             yield return new WaitForSeconds(1f);
             countdown--;
         }
-
-        // 3. GO!
         ShowMessageToAllPlayers("GO!", 1f);
-
-        // 4. Reactivar Inputs
         foreach (var pInput in _spawnedPlayers)
         {
-            if (pInput != null)
-                pInput.ActivateInput();
+            if (pInput != null) pInput.ActivateInput();
         }
     }
 
@@ -133,11 +189,7 @@ public class GameInitializer : MonoBehaviour
     {
         foreach (var hud in _playerHUDs)
         {
-            if (hud != null)
-            {
-                // Usamos el método existente en PlayerHUD
-                hud.ShowCenterMessage(text, duration);
-            }
+            if (hud != null) hud.ShowCenterMessage(text, duration);
         }
     }
 }
