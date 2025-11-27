@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI; // Necesario para LayoutRebuilder
 using UnityEngine.InputSystem;
 using UnityEngine.Events;
 
@@ -22,6 +23,10 @@ public class ControlSelectionManager : MonoBehaviour
     public UnityEvent OnSelectionComplete;
 
     private List<PlayerSlotUI> _spawnedSlots = new List<PlayerSlotUI>();
+
+    // Diccionario para rastrear qué cursor pertenece a qué dispositivo
+    private Dictionary<InputDevice, DeviceCursor> _activeCursors = new Dictionary<InputDevice, DeviceCursor>();
+
     private int _playersReadyCount = 0;
 
     public int TotalSlots => _spawnedSlots.Count;
@@ -30,11 +35,27 @@ public class ControlSelectionManager : MonoBehaviour
     {
         matchData.ClearData();
         SpawnPlayerSlots();
-        StartCoroutine(DetectAndSpawnCursors());
+
+        // Detección inicial de dispositivos ya conectados
+        CheckInitialDevices();
+    }
+
+    private void OnEnable()
+    {
+        InputSystem.onDeviceChange += OnDeviceChange;
+    }
+
+    private void OnDisable()
+    {
+        InputSystem.onDeviceChange -= OnDeviceChange;
     }
 
     private void SpawnPlayerSlots()
     {
+        // Limpiar slots previos si los hubiera
+        foreach (Transform child in playerContainer) Destroy(child.gameObject);
+        _spawnedSlots.Clear();
+
         for (int i = 0; i < matchData.maxPlayers; i++)
         {
             PlayerSlotUI slot = Instantiate(playerSlotPrefab, playerContainer);
@@ -42,38 +63,70 @@ public class ControlSelectionManager : MonoBehaviour
             slot.Initialize(i, c);
             _spawnedSlots.Add(slot);
         }
+
+        // SOLUCIÓN AL PROBLEMA DE POSICIÓN X=0:
+        // Forzamos al sistema de UI a calcular las posiciones de los slots inmediatamente
+        // para que cuando aparezcan los cursores, los slots ya tengan sus coordenadas X correctas.
+        Canvas.ForceUpdateCanvases();
+        LayoutRebuilder.ForceRebuildLayoutImmediate(playerContainer.GetComponent<RectTransform>());
     }
 
-    private IEnumerator DetectAndSpawnCursors()
+    private void CheckInitialDevices()
     {
-        yield return new WaitForEndOfFrame();
-
-        var devices = InputSystem.devices;
-        int cursorIndex = 0;
-
-        foreach (var device in devices)
+        foreach (InputDevice device in InputSystem.devices)
         {
-            string schemeToUse = "";
-
-            if (device is Gamepad)
-            {
-                schemeToUse = "Gamepad";
-            }
-            else if (device is Keyboard || device is Mouse)
-            {
-                if (device is Mouse) continue;
-                schemeToUse = "KeyboardAndMouse";
-            }
-
-            if (!string.IsNullOrEmpty(schemeToUse))
-            {
-                SpawnCursorForDevice(device, schemeToUse, cursorIndex);
-                cursorIndex++;
-            }
+            HandleDeviceConnection(device);
         }
     }
 
-    private void SpawnCursorForDevice(InputDevice device, string scheme, int index)
+    private void OnDeviceChange(InputDevice device, InputDeviceChange change)
+    {
+        switch (change)
+        {
+            case InputDeviceChange.Added:
+            case InputDeviceChange.Reconnected:
+                HandleDeviceConnection(device);
+                break;
+
+            case InputDeviceChange.Removed:
+            case InputDeviceChange.Disconnected:
+                HandleDeviceDisconnection(device);
+                break;
+        }
+    }
+
+    private void HandleDeviceConnection(InputDevice device)
+    {
+        if (_activeCursors.ContainsKey(device)) return;
+
+        string schemeToUse = "";
+
+        if (device is Gamepad)
+        {
+            schemeToUse = "Gamepad";
+        }
+        else if (device is Keyboard || device is Mouse)
+        {
+            if (device is Mouse) return;
+            schemeToUse = "KeyboardAndMouse";
+        }
+
+        if (!string.IsNullOrEmpty(schemeToUse))
+        {
+            SpawnCursorForDevice(device, schemeToUse);
+        }
+    }
+
+    private void HandleDeviceDisconnection(InputDevice device)
+    {
+        if (_activeCursors.TryGetValue(device, out DeviceCursor cursor))
+        {
+            cursor.PopOutAndDestroy();
+            _activeCursors.Remove(device);
+        }
+    }
+
+    private void SpawnCursorForDevice(InputDevice device, string scheme)
     {
         var playerInput = PlayerInput.Instantiate(
             cursorPrefab,
@@ -86,13 +139,29 @@ public class ControlSelectionManager : MonoBehaviour
         var cursorLogic = playerInput.GetComponent<DeviceCursor>();
         if (cursorLogic != null)
         {
+            // LÓGICA DE ASIGNACIÓN DE SLOT:
+            // Obtenemos el índice basado en cuántos cursores hay ya conectados.
+            int cursorIndex = _activeCursors.Count;
+
+            // Si hay más dispositivos que slots (ej: 3er mando, 2 slots),
+            // usamos el operador % para volver al principio.
+            // Mando 1 (index 0) -> Slot 0
+            // Mando 2 (index 1) -> Slot 1
+            // Mando 3 (index 2) -> Slot 0 (Se queda ahí mirando)
+            int targetSlotIndex = cursorIndex % matchData.maxPlayers;
+
+            // Asignar color
             Color assignedColor = Color.white;
             if (matchData.playerColors != null && matchData.playerColors.Length > 0)
             {
-                assignedColor = matchData.playerColors[index % matchData.playerColors.Length];
+                // Usamos el cursorIndex para ciclar colores también
+                assignedColor = matchData.playerColors[cursorIndex % matchData.playerColors.Length];
             }
 
-            cursorLogic.Initialize(this, assignedColor);
+            // Inicializar pasando el slot objetivo
+            cursorLogic.Initialize(this, assignedColor, device, targetSlotIndex);
+
+            _activeCursors.Add(device, cursorLogic);
         }
     }
 
@@ -117,6 +186,11 @@ public class ControlSelectionManager : MonoBehaviour
     {
         if (_playersReadyCount == matchData.maxPlayers)
         {
+            foreach (DeviceCursor cursor in _activeCursors.Values)
+            {
+                cursor.Hide();
+            }
+
             Debug.Log("Selection Complete! Loading next scene...");
             OnSelectionComplete?.Invoke();
         }

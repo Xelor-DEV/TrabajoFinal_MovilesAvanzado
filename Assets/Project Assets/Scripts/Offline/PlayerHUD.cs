@@ -30,6 +30,7 @@ public class PlayerHUD : MonoBehaviour
     private bool isCooldownActive = false;
     private Coroutine cooldownCoroutine;
     private Sequence popSequence;
+    private Coroutine messageCoroutine;
 
     private void Start()
     {
@@ -174,12 +175,25 @@ public class PlayerHUD : MonoBehaviour
     {
         if (centerMessageText != null)
         {
+            // 1. Matar animaciones anteriores y detener temporizadores previos
+            // Esto es crucial para que no haya delay entre llamadas rápidas
+            centerMessageText.DOKill();
+            if (messageCoroutine != null) StopCoroutine(messageCoroutine);
+
+            // 2. Configurar el texto y activar el objeto
             centerMessageText.text = message;
             centerMessageText.gameObject.SetActive(true);
 
+            // 3. Resetear la escala a 0 (inicio del Pop)
+            centerMessageText.transform.localScale = Vector3.zero;
+
+            // 4. Animación Pop In muy rápida (0.15s) con rebote (OutBack)
+            centerMessageText.transform.DOScale(1f, 0.15f).SetEase(Ease.OutBack);
+
+            // 5. Si hay duración, iniciar la cuenta para ocultarlo
             if (duration > 0f)
             {
-                StartCoroutine(HideMessageAfterDelay(duration));
+                messageCoroutine = StartCoroutine(HideMessageAfterDelay(duration));
             }
         }
     }
@@ -187,7 +201,15 @@ public class PlayerHUD : MonoBehaviour
     public void HideCenterMessage()
     {
         if (centerMessageText != null)
-            centerMessageText.gameObject.SetActive(false);
+        {
+            // Matamos cualquier animación de entrada que esté ocurriendo
+            centerMessageText.DOKill();
+
+            // Animación Pop Out rápida (0.1s) hacia adentro (InBack)
+            centerMessageText.transform.DOScale(0f, 0.1f)
+                .SetEase(Ease.InBack)
+                .OnComplete(() => centerMessageText.gameObject.SetActive(false));
+        }
     }
 
     private IEnumerator HideMessageAfterDelay(float delay)

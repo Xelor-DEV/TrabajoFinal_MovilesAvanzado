@@ -7,4 +7,7 @@ public class CameraSystem : MonoBehaviour
     [SerializeField] private Camera cm;
     [SerializeField] private CinemachineBrain cinemachineBrain;
     [SerializeField] private CinemachineCamera cinemachineCamera;
+
+    public CinemachineBrain CinemachineBrain => cinemachineBrain;
+    public CinemachineCamera CinemachineCamera => cinemachineCamera;
 }

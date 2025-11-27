@@ -19,6 +19,7 @@ public class FadeManager : MonoBehaviour
     [SerializeField] private string baseText = "Loading";
     [SerializeField] private TMP_Text loadingText;
     [SerializeField] private float dotInterval = 0.1f;
+    [SerializeField] private float textPopDuration = 0.5f;
 
     [Header("Events")]
     public UnityEvent OnShowBegin;
@@ -120,19 +121,19 @@ public class FadeManager : MonoBehaviour
             return;
         }
 
-        // Primero: bajar la cortina (mostrar) y esperar a que termine
+        // 1. Bajar la cortina y esperar
         await ShowAsync();
 
-        // Segundo: activar el texto de loading y empezar animación
+        // 2. Activar texto con efecto POP IN y empezar animación de puntos
         StartLoadingAnimation();
 
-        // Tercero: esperar a que termine la tarea (carga de escena)
+        // 3. Esperar a que la tarea (escena) termine + tiempo de gracia del GlobalSceneLoader
         await task;
 
-        // Cuarto: detener animación y ocultar texto
+        // 4. Detener animación
         StopLoadingAnimation();
 
-        // Quinto: subir la cortina (ocultar)
+        // 5. Subir la cortina
         await HideAsync();
     }
 
@@ -142,6 +143,13 @@ public class FadeManager : MonoBehaviour
         if (loadingText)
         {
             loadingText.gameObject.SetActive(true);
+
+            // EFECTO POP IN AQUI
+            // Reiniciamos escala a 0
+            loadingText.transform.localScale = Vector3.zero;
+            // Hacemos el tween a escala 1 con un rebote elástico (OutBack)
+            loadingText.transform.DOScale(Vector3.one, textPopDuration).SetEase(Ease.OutBack);
+
             AnimateLoadingText();
         }
     }
@@ -156,12 +164,11 @@ public class FadeManager : MonoBehaviour
     private async void AnimateLoadingText()
     {
         int dotCount = 0;
-
-        while (isLoading)
+        // Pequeña seguridad para evitar bucles si se destruye el objeto
+        while (isLoading && this != null && loadingText != null)
         {
             dotCount = (dotCount + 1) % 4;
-            if (loadingText)
-                loadingText.text = baseText + new string('.', dotCount);
+            loadingText.text = baseText + new string('.', dotCount);
             await Task.Delay((int)(dotInterval * 1000));
         }
     }

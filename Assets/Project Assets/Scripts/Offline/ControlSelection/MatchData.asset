@@ -20,6 +20,4 @@ MonoBehaviour:
   - {r: 0.99215686, g: 0.99215686, b: 0.5882353, a: 1}
   - {r: 0.7019608, g: 0.61960787, b: 0.70980394, a: 1}
   - {r: 1, g: 0.7019608, b: 0.2784314, a: 1}
-  assignedPlayers:
-  - playerIndex: 0
-    controlScheme: Gamepad
+  assignedPlayers: []

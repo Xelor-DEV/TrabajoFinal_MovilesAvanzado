@@ -9,9 +9,7 @@ public class DeviceCursor : MonoBehaviour
     [SerializeField] private Image cursorImage;
 
     [Header("Audio Settings")]
-    [Tooltip("El índice del SFX en el AudioManager que sonará al mover el cursor.")]
     [SerializeField] private int moveSfxIndex;
-    [Tooltip("El índice del SFX en el AudioManager que sonará al confirmar (Submit).")]
     [SerializeField] private int submitSfxIndex;
 
     private ControlSelectionManager _manager;
@@ -20,34 +18,44 @@ public class DeviceCursor : MonoBehaviour
 
     private bool _isLocked = false;
 
-    // Modified Initialize: Now accepts the Color directly
-    public void Initialize(ControlSelectionManager manager, Color cursorColor)
+    public InputDevice LinkedDevice { get; private set; }
+
+    // Se añade el parámetro 'startIndex'
+    public void Initialize(ControlSelectionManager manager, Color cursorColor, InputDevice device, int startIndex)
     {
         _manager = manager;
         _rectTransform = GetComponent<RectTransform>();
+        LinkedDevice = device;
 
-        // Assign the color received from the Manager (from the ScriptableObject)
+        // Establecemos el índice inicial (ej: 0 para P1, 1 para P2, 0 para P3...)
+        _currentIndex = startIndex;
+
         cursorImage.color = cursorColor;
 
+        // IMPORTANTE: Forzamos la posición inicial antes de la animación
         SnapToPosition();
+
+        // EFECTO POP-IN
+        transform.localScale = Vector3.zero;
+        transform.DOScale(1f, 0.4f).SetEase(Ease.OutBack);
+    }
+
+    public void PopOutAndDestroy()
+    {
+        transform.DOKill();
+        transform.DOScale(0f, 0.3f)
+            .SetEase(Ease.InBack)
+            .OnComplete(() => Destroy(gameObject));
     }
 
     public void OnMove(InputAction.CallbackContext context)
     {
         if (_isLocked || !context.performed) return;
 
-        // CORRECCIÓN: Leemos un float, no un Vector2, porque el Action es tipo Axis
         float input = context.ReadValue<float>();
 
-        // Usamos el float directamente (input en lugar de input.x)
-        if (input > 0.5f)
-        {
-            MoveCursor(1);
-        }
-        else if (input < -0.5f)
-        {
-            MoveCursor(-1);
-        }
+        if (input > 0.5f) MoveCursor(1);
+        else if (input < -0.5f) MoveCursor(-1);
     }
 
     public void OnSubmit(InputAction.CallbackContext context)
@@ -58,21 +66,15 @@ public class DeviceCursor : MonoBehaviour
 
         if (success)
         {
-            // REPRODUCIR SONIDO DE SUBMIT (Confirmación)
             if (AudioManager.Instance != null)
-            {
                 AudioManager.Instance.PlaySfx(submitSfxIndex);
-            }
 
             _isLocked = true;
             transform.DOScale(1.5f, 0.15f).SetLoops(2, LoopType.Yoyo);
         }
         else
         {
-            // Shake animation on error
             _rectTransform.DOShakeAnchorPos(0.4f, new Vector2(20f, 0f), 20, 90, false, true);
-
-            // Opcional: Si quisieras un sonido de error, iría aquí.
         }
     }
 
@@ -83,12 +85,8 @@ public class DeviceCursor : MonoBehaviour
 
         _currentIndex = (_currentIndex + direction + totalSlots) % totalSlots;
 
-        // REPRODUCIR SONIDO DE MOVIMIENTO
-        // Lo ponemos aquí para asegurar que solo suene si realmente se ejecuta la lógica de movimiento
         if (AudioManager.Instance != null)
-        {
             AudioManager.Instance.PlaySfx(moveSfxIndex);
-        }
 
         UpdateVisualPosition();
     }
@@ -96,7 +94,6 @@ public class DeviceCursor : MonoBehaviour
     private void UpdateVisualPosition()
     {
         RectTransform targetSlot = _manager.GetSlotTransform(_currentIndex);
-
         if (targetSlot != null)
         {
             _rectTransform.DOMove(targetSlot.position, 0.2f).SetEase(Ease.OutQuad);
@@ -108,7 +105,11 @@ public class DeviceCursor : MonoBehaviour
         RectTransform targetSlot = _manager.GetSlotTransform(_currentIndex);
         if (targetSlot != null)
         {
+            // Al asignar .position (world space) nos aseguramos de caer exactamente sobre el slot
+            // independientemente de la jerarquía del cursor.
             _rectTransform.position = targetSlot.position;
         }
     }
+
+    public void Hide() => cursorImage.enabled = false;
 }
