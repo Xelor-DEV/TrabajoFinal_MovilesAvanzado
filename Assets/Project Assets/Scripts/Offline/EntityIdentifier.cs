@@ -5,6 +5,8 @@ public enum Entity
 {
     Kart,
     Wall,
+    Waypoint,
+    Void,
     None
 }
 
@@ -34,33 +36,18 @@ public class EntityIdentifier : MonoBehaviour
 
     public Entity Entity
     {
-        get
-        {
-            return entity;
-        }
-        set
-        {
-            entity = value;
-        }
+        get { return entity; }
+        set { entity = value; }
     }
 
     public bool IsTargetable
     {
-        get
-        {
-            return isTargetable;
-        }
-        set
-        {
-            isTargetable = value;
-        }
+        get { return isTargetable; }
+        set { isTargetable = value; }
     }
 
     public Transform Pivot
     {
-        get
-        {
-            return pivot;
-        }
+        get { return pivot; }
     }
 }

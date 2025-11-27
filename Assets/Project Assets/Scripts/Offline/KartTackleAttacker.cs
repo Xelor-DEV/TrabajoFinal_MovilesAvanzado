@@ -21,6 +21,7 @@ public class KartTackleAttacker : MonoBehaviour
     [Header("Events")]
     public UnityEvent OnTackleStarted;
     public UnityEvent OnTackleEnded;
+    public UnityEvent OnTargetHit;
     public UnityEvent OnCooldownStarted;  // Nuevo evento para cuando inicia el cooldown
     public UnityEvent OnCooldownFinished; // Nuevo evento para cuando termina el cooldown
 
@@ -145,6 +146,8 @@ public class KartTackleAttacker : MonoBehaviour
             // Llamar directamente al método del víctima
             victim.ReceiveTackle(pushDirection, tackleForce * 0.7f, 8f, 1.5f);
         }
+
+        OnTargetHit?.Invoke();
 
         EndTackle();
     }

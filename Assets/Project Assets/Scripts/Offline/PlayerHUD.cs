@@ -20,6 +20,10 @@ public class PlayerHUD : MonoBehaviour
     [SerializeField] private TMP_Text positionText;
     [SerializeField] private TMP_Text positionSuffixText;
 
+    [Header("Position Animation Settings")]
+    [SerializeField] private float posScaleDuration = 0.3f;
+    [SerializeField] private float posOvershoot = 1.2f;
+
     [Header("Message References")]
     [SerializeField] private TMP_Text centerMessageText;
 
@@ -149,10 +153,29 @@ public class PlayerHUD : MonoBehaviour
     }
 
     // Public methods for other HUD elements (to be implemented later)
+    // MODIFICADO: Ahora hace Pop In
     public void UpdatePosition(int position)
     {
         if (positionText != null)
-            positionText.text = position.ToString();
+        {
+            // Si el texto cambia, hacemos la animación
+            if (positionText.text != position.ToString())
+            {
+                positionText.text = position.ToString();
+
+                // Resetear escala y animar
+                positionText.transform.DOKill();
+                positionText.transform.localScale = Vector3.one; // Empezar de tamaño normal
+
+                // Secuencia de Pop: Escalar grande -> Volver a normal
+                positionText.transform.DOScale(posOvershoot, posScaleDuration * 0.5f)
+                    .SetEase(Ease.OutBack)
+                    .OnComplete(() =>
+                    {
+                        positionText.transform.DOScale(1f, posScaleDuration * 0.5f).SetEase(Ease.OutQuad);
+                    });
+            }
+        }
 
         UpdatePositionSuffix(position);
     }

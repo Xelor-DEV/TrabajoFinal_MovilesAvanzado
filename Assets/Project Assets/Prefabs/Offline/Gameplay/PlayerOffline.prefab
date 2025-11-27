@@ -26243,6 +26243,7 @@ GameObject:
   - component: {fileID: 6633564422378768810}
   - component: {fileID: 364273323340794328}
   - component: {fileID: 8319984703417959132}
+  - component: {fileID: 715039054464403904}
   m_Layer: 0
   m_Name: CinemachinePlayerCamera
   m_TagString: Untagged
@@ -26340,6 +26341,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   LookAtOffset: {x: 0, y: 1.37, z: 0}
+--- !u!114 &715039054464403904
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4728568312681201311}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68bb026fafb42b14791938953eaace77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  NoiseProfile: {fileID: 11400000, guid: 69ce8388f6785dd4c8c39915efece2f4, type: 2}
+  PivotOffset: {x: 0, y: 0, z: 0}
+  AmplitudeGain: 0
+  FrequencyGain: 0
+  m_NoiseOffsets: {x: 0, y: 0, z: 0}
 --- !u!1 &4815030250469860668
 GameObject:
   m_ObjectHideFlags: 0
@@ -46177,6 +46195,7 @@ GameObject:
   - component: {fileID: 7454923675144419453}
   - component: {fileID: 8210664660641673949}
   - component: {fileID: 1004635564759076202}
+  - component: {fileID: 8825486302062554974}
   - component: {fileID: 5621255951119205638}
   - component: {fileID: 4216108782686953918}
   - component: {fileID: 5555466458778709279}
@@ -46484,6 +46503,21 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  OnTargetHit:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 4932356038403989148}
+        m_TargetAssemblyTypeName: KartVFX, Assembly-CSharp
+        m_MethodName: PlayAttackerShake
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   OnCooldownStarted:
     m_PersistentCalls:
       m_Calls:
@@ -46567,6 +46601,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
+      - m_Target: {fileID: 4932356038403989148}
+        m_TargetAssemblyTypeName: KartVFX, Assembly-CSharp
+        m_MethodName: PlayVictimShake
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
   OnPushEnded:
     m_PersistentCalls:
       m_Calls:
@@ -46626,6 +46672,15 @@ MonoBehaviour:
   driftRightTrail: {fileID: 8380859037621978695}
   speedLeftParticles: {fileID: 4838545725398946248}
   speedRightParticles: {fileID: 9085356210166837939}
+  cinemachineCamera: {fileID: 6633564422378768810}
+  attackerShakeProfile:
+    amplitude: 1.5
+    frequency: 12.5
+    duration: 0.3
+  victimShakeProfile:
+    amplitude: 3
+    frequency: 20
+    duration: 0.5
   kartStats: {fileID: 11400000, guid: a2d80d2dc873ce74ab45f5ee221ef0a3, type: 2}
 --- !u!114 &7454923675144419453
 MonoBehaviour:
@@ -46666,6 +46721,8 @@ MonoBehaviour:
   tackleAttacker: {fileID: 4331192178884072151}
   positionText: {fileID: 7700112182485715144}
   positionSuffixText: {fileID: 1926351482383034273}
+  posScaleDuration: 0.3
+  posOvershoot: 1.2
   centerMessageText: {fileID: 3984604492613764028}
   spellIcon: {fileID: 5688076962375217646}
 --- !u!114 &1004635564759076202
@@ -46684,6 +46741,22 @@ MonoBehaviour:
   cinemachineBrain: {fileID: 6067865818109837085}
   cinemachineCamera: {fileID: 6633564422378768810}
   canvas: {fileID: 5703138096903857878}
+--- !u!114 &8825486302062554974
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7836153539970892115}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1d3ee48cf1c63a4ca2b00ffaf524d5d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hud: {fileID: 8210664660641673949}
+  rb: {fileID: 5621255951119205638}
+  waypointEntity: 2
+  voidEntity: 3
 --- !u!54 &5621255951119205638
 Rigidbody:
   m_ObjectHideFlags: 0

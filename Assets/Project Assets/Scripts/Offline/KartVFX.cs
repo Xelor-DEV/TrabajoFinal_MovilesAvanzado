@@ -1,5 +1,6 @@
 using UnityEngine;
-using UnityEngine.Events;
+using Unity.Cinemachine;
+using System;
 using System.Collections;
 
 public class KartVFX : MonoBehaviour
@@ -18,6 +19,11 @@ public class KartVFX : MonoBehaviour
     [SerializeField] private ParticleSystem speedLeftParticles;
     [SerializeField] private ParticleSystem speedRightParticles;
 
+    [Header("Camera Shake Settings")]
+    [SerializeField] private CinemachineCamera cinemachineCamera;
+    [SerializeField] private ShakeProfile attackerShakeProfile = new ShakeProfile { amplitude = 1f, frequency = 10f, duration = 0.2f };
+    [SerializeField] private ShakeProfile victimShakeProfile = new ShakeProfile { amplitude = 3f, frequency = 20f, duration = 0.5f };
+
     [Header("Kart Stats Reference")]
     [SerializeField] private KartStats kartStats;
 
@@ -35,6 +41,9 @@ public class KartVFX : MonoBehaviour
     private ParticleSystem.EmissionModule speedLeftEmission;
     private ParticleSystem.EmissionModule speedRightEmission;
 
+    private CinemachineBasicMultiChannelPerlin noiseComponent;
+    private Coroutine shakeCoroutine;
+
     private void Awake()
     {
         // Store original light intensity and disable light
@@ -42,6 +51,11 @@ public class KartVFX : MonoBehaviour
         {
             originalLightIntensity = nitroLight.intensity;
             nitroLight.intensity = 0f;
+        }
+
+        if (cinemachineCamera != null)
+        {
+            noiseComponent = cinemachineCamera.GetComponent<CinemachineBasicMultiChannelPerlin>();
         }
 
         // Initialize particle emission modules
@@ -190,4 +204,47 @@ public class KartVFX : MonoBehaviour
 
         nitroLight.intensity = targetIntensity;
     }
+
+    public void PlayAttackerShake()
+    {
+        StartShake(attackerShakeProfile);
+    }
+
+    public void PlayVictimShake()
+    {
+        StartShake(victimShakeProfile);
+    }
+
+    private void StartShake(ShakeProfile profile)
+    {
+        if (noiseComponent == null)
+        {
+            Debug.LogWarning("No se encontró CinemachineBasicMultiChannelPerlin en la cámara.");
+            return;
+        }
+
+        if (shakeCoroutine != null) StopCoroutine(shakeCoroutine);
+        shakeCoroutine = StartCoroutine(ShakeProcess(profile));
+    }
+
+    private IEnumerator ShakeProcess(ShakeProfile profile)
+    {
+        // 1. Aplicar ruido
+        noiseComponent.AmplitudeGain = profile.amplitude;
+        noiseComponent.FrequencyGain = profile.frequency;
+
+        // 2. Esperar duración
+        yield return new WaitForSeconds(profile.duration);
+
+        // 3. Apagar ruido
+        noiseComponent.AmplitudeGain = 0f;
+    }
+}
+
+[Serializable]
+public struct ShakeProfile
+{
+    public float amplitude;   // Qué tan fuerte tiembla
+    public float frequency;   // Qué tan rápido vibra
+    public float duration;    // Cuánto tiempo dura
 }
