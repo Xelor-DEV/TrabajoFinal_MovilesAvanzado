@@ -20,6 +20,9 @@ public class PlayerHUD : MonoBehaviour
     [SerializeField] private TMP_Text positionText;
     [SerializeField] private TMP_Text positionSuffixText;
 
+    [Header("Player Identity")]
+    [SerializeField] private TMP_Text playerLabelText;
+
     [Header("Position Animation Settings")]
     [SerializeField] private float posScaleDuration = 0.3f;
     [SerializeField] private float posOvershoot = 1.2f;
@@ -239,6 +242,17 @@ public class PlayerHUD : MonoBehaviour
     {
         yield return new WaitForSeconds(delay);
         HideCenterMessage();
+    }
+
+    public void SetPlayerLabel(int playerNumber, Color playerColor)
+    {
+        if (playerLabelText != null)
+        {
+            playerLabelText.text = $"Player {playerNumber}";
+
+            // Asignamos el color proveniente del ScriptableObject
+            playerLabelText.color = playerColor;
+        }
     }
 
     // Properties

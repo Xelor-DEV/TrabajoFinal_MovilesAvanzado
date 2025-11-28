@@ -178,6 +178,26 @@ public class AudioManager : NonPersistentSingleton<AudioManager>
         sfxSources[index].PlayOneShot(sfxClips[index]);
     }
 
+    public void SetSourceClip(int clipIndex)
+    {
+        if (clipIndex < 0 || clipIndex >= sfxClips.Length)
+        {
+            Debug.LogWarning($"[AudioManager] Clip Index {clipIndex} fuera de rango.");
+            return;
+        }
+
+        sfxSources[clipIndex].clip = sfxClips[clipIndex];
+    }
+
+    public AudioClip GetClipByIndex(int index)
+    {
+        if (sfxClips != null && index >= 0 && index < sfxClips.Length)
+        {
+            return sfxClips[index];
+        }
+        return null;
+    }
+
     public AudioSource GetAudioSourceByIndex(int index)
     {
         if (index < 0 || index >= sfxSources.Length)

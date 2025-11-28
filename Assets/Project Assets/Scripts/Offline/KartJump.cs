@@ -23,6 +23,8 @@ public class KartJump : MonoBehaviour
     public UnityEvent<bool> OnJumpingStateChanged;
     public UnityEvent<bool> OnFallingStateChanged;
 
+    public UnityEvent OnJumpPerformed;
+
     // State variables
     private bool isGrounded = false;
     private bool isJumping = false;
@@ -127,6 +129,7 @@ public class KartJump : MonoBehaviour
 
         SetJumpingState(true);
         coyoteTimer = 0f; // Consumir Coyote Time al saltar
+        OnJumpPerformed?.Invoke();
     }
 
     private void SetJumpingState(bool jumping)

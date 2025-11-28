@@ -68,7 +68,22 @@ public class GameInitializer : MonoBehaviour
 
             // 3. Configurar HUD
             PlayerHUD hud = playerInstance.GetComponent<PlayerHUD>();
-            if (hud != null) _playerHUDs.Add(hud);
+            if (hud != null)
+            {
+                _playerHUDs.Add(hud);
+
+                // 1. Obtener el color. Usamos un color por defecto (blanco) por seguridad
+                Color assignedColor = Color.white;
+
+                // Verificamos que el array de colores tenga suficientes elementos para evitar errores
+                if (matchData.playerColors != null && matchData.playerColors.Length > i)
+                {
+                    assignedColor = matchData.playerColors[i];
+                }
+
+                // 2. Pasamos el número (i+1) y el color
+                hud.SetPlayerLabel(i + 1, assignedColor);
+            }
 
             // 4. Configurar CameraSystem, Channels y VIEWPORT (Pantalla partida)
             CameraSystem camSystem = playerInstance.GetComponent<CameraSystem>();
