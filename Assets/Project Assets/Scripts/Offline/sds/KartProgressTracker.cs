@@ -21,6 +21,7 @@ public class KartProgressTracker : MonoBehaviour
     private Transform currentRespawnPoint;
     private int currentRank = 0;
 
+    public int PlayerID { get; set; }
     public int LastPassedWaypointIndex => lastPassedWaypointIndex;
 
     private void Start()
@@ -79,7 +80,7 @@ public class KartProgressTracker : MonoBehaviour
 
             if (lastPassedWaypointIndex >= totalWaypoints - 1)
             {
-                RaceManager.Instance.CheckRaceFinish(lastPassedWaypointIndex);
+                RaceManager.Instance.NotifyRaceFinish(PlayerID);
             }
         }
     }
@@ -91,7 +92,7 @@ public class KartProgressTracker : MonoBehaviour
 
         if (currentRespawnPoint != null)
         {
-            Debug.Log("Reapareciendo en último Checkpoint.");
+            Debug.Log("Reapareciendo en ï¿½ltimo Checkpoint.");
             transform.position = currentRespawnPoint.position;
             transform.rotation = currentRespawnPoint.rotation;
 
@@ -103,7 +104,7 @@ public class KartProgressTracker : MonoBehaviour
         }
         else
         {
-            Debug.LogError("¡ERROR CRÍTICO! Sin Checkpoint guardado.");
+            Debug.LogError("ï¿½ERROR CRï¿½TICO! Sin Checkpoint guardado.");
         }
     }
 

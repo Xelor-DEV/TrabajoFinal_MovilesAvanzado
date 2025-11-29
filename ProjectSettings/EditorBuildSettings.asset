@@ -14,6 +14,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Project Assets/Scenes/Offline/Gameplay.unity
     guid: 44b602397c2fe9d48af458a36dadd8df
+  - enabled: 1
+    path: Assets/Project Assets/Scenes/Offline/GameOver.unity
+    guid: 699d266af3a3e854ebc5425f67de19fd
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: dbfc82c9aaa4f46469f429a59f159c2c, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

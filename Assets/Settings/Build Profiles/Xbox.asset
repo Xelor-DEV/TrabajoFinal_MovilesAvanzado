@@ -26,12 +26,16 @@ MonoBehaviour:
     m_path: Assets/Project Assets/Scenes/Offline/ControlSelection.unity
   - m_enabled: 1
     m_path: Assets/Project Assets/Scenes/Offline/Gameplay.unity
+  - m_enabled: 1
+    m_path: Assets/Project Assets/Scenes/Offline/GameOver.unity
   m_ScriptingDefines: []
   m_PlayerSettingsYaml:
     m_Settings: []
   references:
     version: 2
     RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
     - rid: 4221644771026534502
       type: {class: UWPPlatformSettings, ns: UnityEditor.UWP, asm: UnityEditor.UWP.Extensions}
       data:

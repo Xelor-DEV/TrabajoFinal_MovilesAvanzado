@@ -1,6 +1,6 @@
+using UnityEngine;
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Utilities;
 
@@ -14,13 +14,16 @@ public class MatchDataSO : ScriptableObject
     [Header("Runtime Data")]
     public List<PlayerAssignment> assignedPlayers = new List<PlayerAssignment>();
 
-    // CAMBIO: Inicializamos la lista con espacios vacíos (nulls)
+    // [NUEVO] Variable para persistir quién ganó entre escenas
+    public int winningPlayerIndex = -1; 
+
     public void InitializeList()
     {
         assignedPlayers.Clear();
+        winningPlayerIndex = -1; // Reseteamos ganador al iniciar
         for (int i = 0; i < maxPlayers; i++)
         {
-            assignedPlayers.Add(null); // Creamos el hueco para el jugador
+            assignedPlayers.Add(null);
         }
     }
 
@@ -33,12 +36,8 @@ public class MatchDataSO : ScriptableObject
             deviceIds = new List<int>()
         };
 
-        foreach (var dev in devices)
-        {
-            newAssignment.deviceIds.Add(dev.deviceId);
-        }
+        foreach (var dev in devices) newAssignment.deviceIds.Add(dev.deviceId);
 
-        // CAMBIO: En lugar de .Add (al final), insertamos en el índice EXACTO del jugador
         if (playerIndex < assignedPlayers.Count)
         {
             assignedPlayers[playerIndex] = newAssignment;

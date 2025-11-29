@@ -56,7 +56,7 @@ public class GameInitializer : MonoBehaviour
             
             // SEGURIDAD: Si por alguna razón el slot está vacío (jugador no se unió), lo saltamos
             if (assignment == null) continue;
-            
+
             // Usamos 'assignment.playerIndex' para asegurar que usamos el spawn point correcto
             // aunque usualmente 'i' y 'assignment.playerIndex' ahora serán iguales gracias al Sort.
             Transform spawnPoint = gridManager.GetSpawnPoint(assignment.playerIndex);
@@ -64,6 +64,12 @@ public class GameInitializer : MonoBehaviour
             // 1. Instanciar
             GameObject playerInstance = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
 
+            KartProgressTracker tracker = playerInstance.GetComponent<KartProgressTracker>();
+            if (tracker != null)
+            {
+                tracker.PlayerID = assignment.playerIndex;
+            }
+            
             // 2. Configurar Input (Recordando la corrección de IDs de la respuesta anterior)
             PlayerInput pInput = playerInstance.GetComponent<PlayerInput>();
             if (pInput != null)

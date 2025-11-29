@@ -2,11 +2,12 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.Events;
 
 public class RaceManager : NonPersistentSingleton<RaceManager>
 {
     [Header("Track Configuration")]
-    [Tooltip("Arrastra todos los Waypoints en orden aquí.")]
+    [Tooltip("Arrastra todos los Waypoints en orden aquï¿½.")]
     [SerializeField] private Waypoint[] waypoints;
     [SerializeField] private bool drawPathGizmos = true;
     [SerializeField] private Color pathColor = Color.cyan;
@@ -18,9 +19,13 @@ public class RaceManager : NonPersistentSingleton<RaceManager>
     private List<KartProgressTracker> racers = new List<KartProgressTracker>();
     private bool raceFinished = false;
 
+    public UnityEvent<int> OnRaceEnded;
+
+    public List<KartProgressTracker> Racers => racers;
+
     private void Awake()
     {
-        // Inicializar índices de waypoints
+        // Inicializar ï¿½ndices de waypoints
         for (int i = 0; i < waypoints.Length; i++)
         {
             if (waypoints[i] != null) waypoints[i].Index = i;
@@ -32,7 +37,18 @@ public class RaceManager : NonPersistentSingleton<RaceManager>
         StartCoroutine(RankingRoutine());
     }
 
-    // Método llamado por el GameInitializer para registrar jugadores
+    public void NotifyRaceFinish(int winningPlayerID)
+    {
+        if (raceFinished) return;
+        
+        raceFinished = true;
+        Debug.Log($"Â¡VICTORIA! El Ganador es el Player {winningPlayerID + 1}");
+
+        // Lanzamos el evento para que lo escuche el RaceCompletionHandler
+        OnRaceEnded?.Invoke(winningPlayerID);
+    }
+
+    // Mï¿½todo llamado por el GameInitializer para registrar jugadores
     public void RegisterRacer(KartProgressTracker racer)
     {
         if (!racers.Contains(racer))
@@ -47,7 +63,7 @@ public class RaceManager : NonPersistentSingleton<RaceManager>
             }
             else
             {
-                Debug.LogWarning("RaceManager: ¡Cuidado! El Waypoint 0 no tiene RespawnPoint. Si se caen al inicio, habrá error.");
+                Debug.LogWarning("RaceManager: ï¿½Cuidado! El Waypoint 0 no tiene RespawnPoint. Si se caen al inicio, habrï¿½ error.");
             }
         }
     }
@@ -60,15 +76,6 @@ public class RaceManager : NonPersistentSingleton<RaceManager>
     }
 
     public int TotalWaypoints => waypoints.Length;
-
-    public void CheckRaceFinish(int playerIndex)
-    {
-        if (raceFinished) return;
-
-        Debug.Log($"¡Jugador {playerIndex + 1} ha cruzado la meta!");
-        // Aquí podrías disparar eventos de UI, detener input, etc.
-        // raceFinished = true; // Descomentar si solo gana el primero
-    }
 
     private IEnumerator RankingRoutine()
     {
@@ -86,18 +93,18 @@ public class RaceManager : NonPersistentSingleton<RaceManager>
         if (racers.Count < 2) return;
 
         // ALGORITMO DE ORDENAMIENTO
-        // Ordenamos la lista 'racers' basándonos en:
-        // 1. Mayor índice de Waypoint completado.
+        // Ordenamos la lista 'racers' basï¿½ndonos en:
+        // 1. Mayor ï¿½ndice de Waypoint completado.
         // 2. Menor distancia al SIGUIENTE waypoint.
 
         racers.Sort((a, b) =>
         {
-            // Comparar índice de waypoint (Mayor es mejor)
+            // Comparar ï¿½ndice de waypoint (Mayor es mejor)
             int waypointCompare = b.LastPassedWaypointIndex.CompareTo(a.LastPassedWaypointIndex);
 
             if (waypointCompare != 0) return waypointCompare;
 
-            // Si están en el mismo waypoint, calculamos distancia al siguiente
+            // Si estï¿½n en el mismo waypoint, calculamos distancia al siguiente
             int nextWpIndex = a.LastPassedWaypointIndex + 1;
 
             // Si ya terminaron, da igual (o podriamos usar distancia a meta)
@@ -112,10 +119,10 @@ public class RaceManager : NonPersistentSingleton<RaceManager>
             return distA.CompareTo(distB);
         });
 
-        // Actualizar HUDs con la nueva posición
+        // Actualizar HUDs con la nueva posiciï¿½n
         for (int i = 0; i < racers.Count; i++)
         {
-            // i + 1 es la posición (1º, 2º, etc.)
+            // i + 1 es la posiciï¿½n (1ï¿½, 2ï¿½, etc.)
             racers[i].UpdateRank(i + 1);
         }
     }
