@@ -24,22 +24,21 @@ public class ControlSelectionManager : MonoBehaviour
 
     private List<PlayerSlotUI> _spawnedSlots = new List<PlayerSlotUI>();
 
-    // Diccionario para rastrear qué cursor pertenece a qué dispositivo
+    // Diccionario para rastrear quï¿½ cursor pertenece a quï¿½ dispositivo
     private Dictionary<InputDevice, DeviceCursor> _activeCursors = new Dictionary<InputDevice, DeviceCursor>();
 
     private int _playersReadyCount = 0;
 
     public int TotalSlots => _spawnedSlots.Count;
 
-    private void Start()
+private void Start()
     {
-        matchData.ClearData();
+        // CAMBIO: Usamos el nuevo mÃ©todo que crea los huecos vacÃ­os
+        matchData.InitializeList(); 
+        
         SpawnPlayerSlots();
-
-        // Detección inicial de dispositivos ya conectados
         CheckInitialDevices();
     }
-
     private void OnEnable()
     {
         InputSystem.onDeviceChange += OnDeviceChange;
@@ -64,7 +63,7 @@ public class ControlSelectionManager : MonoBehaviour
             _spawnedSlots.Add(slot);
         }
 
-        // SOLUCIÓN AL PROBLEMA DE POSICIÓN X=0:
+        // SOLUCIï¿½N AL PROBLEMA DE POSICIï¿½N X=0:
         // Forzamos al sistema de UI a calcular las posiciones de los slots inmediatamente
         // para que cuando aparezcan los cursores, los slots ya tengan sus coordenadas X correctas.
         Canvas.ForceUpdateCanvases();
@@ -139,22 +138,22 @@ public class ControlSelectionManager : MonoBehaviour
         var cursorLogic = playerInput.GetComponent<DeviceCursor>();
         if (cursorLogic != null)
         {
-            // LÓGICA DE ASIGNACIÓN DE SLOT:
-            // Obtenemos el índice basado en cuántos cursores hay ya conectados.
+            // Lï¿½GICA DE ASIGNACIï¿½N DE SLOT:
+            // Obtenemos el ï¿½ndice basado en cuï¿½ntos cursores hay ya conectados.
             int cursorIndex = _activeCursors.Count;
 
-            // Si hay más dispositivos que slots (ej: 3er mando, 2 slots),
+            // Si hay mï¿½s dispositivos que slots (ej: 3er mando, 2 slots),
             // usamos el operador % para volver al principio.
             // Mando 1 (index 0) -> Slot 0
             // Mando 2 (index 1) -> Slot 1
-            // Mando 3 (index 2) -> Slot 0 (Se queda ahí mirando)
+            // Mando 3 (index 2) -> Slot 0 (Se queda ahï¿½ mirando)
             int targetSlotIndex = cursorIndex % matchData.maxPlayers;
 
             // Asignar color
             Color assignedColor = Color.white;
             if (matchData.playerColors != null && matchData.playerColors.Length > 0)
             {
-                // Usamos el cursorIndex para ciclar colores también
+                // Usamos el cursorIndex para ciclar colores tambiï¿½n
                 assignedColor = matchData.playerColors[cursorIndex % matchData.playerColors.Length];
             }
 
@@ -174,14 +173,16 @@ public class ControlSelectionManager : MonoBehaviour
         if (slot.IsTaken) return false;
 
         slot.MarkAsTaken();
-        matchData.SaveAssignment(slot.PlayerIndex, input.devices[0], input.currentControlScheme);
+
+        // CAMBIO: Pasamos 'input.devices' completo para capturar Teclado Y Mouse si aplica
+        matchData.SaveAssignment(slot.PlayerIndex, input.devices, input.currentControlScheme);
 
         _playersReadyCount++;
         CheckIfAllReady();
 
         return true;
     }
-
+    
     private void CheckIfAllReady()
     {
         if (_playersReadyCount == matchData.maxPlayers)

@@ -38,7 +38,7 @@ public class GameInitializer : MonoBehaviour
 
         playerInputManager.joinBehavior = PlayerJoinBehavior.JoinPlayersManually;
 
-        // Cuando lo hacemos manual, a veces es mejor desactivar la lógica automática
+        // Cuando lo hacemos manual, a veces es mejor desactivar la lï¿½gica automï¿½tica
         // de split screen del manager para evitar conflictos, ya que nosotros controlaremos los rects.
         playerInputManager.splitScreen = false;
     }
@@ -51,17 +51,34 @@ public class GameInitializer : MonoBehaviour
 
         for (int i = 0; i < totalPlayers; i++)
         {
+            // Ahora 'i' coincide perfectamente con el orden de los jugadores
             PlayerAssignment assignment = matchData.assignedPlayers[i];
-            Transform spawnPoint = gridManager.GetSpawnPoint(i);
+            
+            // SEGURIDAD: Si por alguna razÃ³n el slot estÃ¡ vacÃ­o (jugador no se uniÃ³), lo saltamos
+            if (assignment == null) continue;
+            
+            // Usamos 'assignment.playerIndex' para asegurar que usamos el spawn point correcto
+            // aunque usualmente 'i' y 'assignment.playerIndex' ahora serÃ¡n iguales gracias al Sort.
+            Transform spawnPoint = gridManager.GetSpawnPoint(assignment.playerIndex);
 
             // 1. Instanciar
             GameObject playerInstance = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
 
-            // 2. Configurar Input
+            // 2. Configurar Input (Recordando la correcciÃ³n de IDs de la respuesta anterior)
             PlayerInput pInput = playerInstance.GetComponent<PlayerInput>();
             if (pInput != null)
             {
-                pInput.SwitchCurrentControlScheme(assignment.controlScheme, assignment.device);
+                List<InputDevice> devicesToUse = new List<InputDevice>();
+                
+                // AsegÃºrate de haber implementado el cambio de 'deviceIds' en MatchDataSO
+                // que te mencionÃ© en la respuesta anterior.
+                foreach (int id in assignment.deviceIds) 
+                {
+                    InputDevice dev = InputSystem.GetDeviceById(id);
+                    if (dev != null) devicesToUse.Add(dev);
+                }
+
+                pInput.SwitchCurrentControlScheme(assignment.controlScheme, devicesToUse.ToArray());
                 pInput.DeactivateInput();
                 _spawnedPlayers.Add(pInput);
             }
@@ -71,30 +88,29 @@ public class GameInitializer : MonoBehaviour
             if (hud != null)
             {
                 _playerHUDs.Add(hud);
-
-                // 1. Obtener el color. Usamos un color por defecto (blanco) por seguridad
+                
                 Color assignedColor = Color.white;
-
-                // Verificamos que el array de colores tenga suficientes elementos para evitar errores
-                if (matchData.playerColors != null && matchData.playerColors.Length > i)
+                // Usamos assignment.playerIndex para buscar el color correcto
+                if (matchData.playerColors != null && matchData.playerColors.Length > assignment.playerIndex)
                 {
-                    assignedColor = matchData.playerColors[i];
+                    assignedColor = matchData.playerColors[assignment.playerIndex];
                 }
 
-                // 2. Pasamos el número (i+1) y el color
-                hud.SetPlayerLabel(i + 1, assignedColor);
+                // AquÃ­ es donde veÃ­as el texto mal. Ahora assignment.playerIndex serÃ¡ correcto (0 para P1, 1 para P2)
+                hud.SetPlayerLabel(assignment.playerIndex + 1, assignedColor);
             }
 
-            // 4. Configurar CameraSystem, Channels y VIEWPORT (Pantalla partida)
+            // 4. Configurar CÃ¡mara (Split Screen)
             CameraSystem camSystem = playerInstance.GetComponent<CameraSystem>();
             if (camSystem != null)
             {
-                SetupCameraChannels(camSystem, i);
-                ConfigureCameraViewport(camSystem.CM, i, totalPlayers);
+                // Usamos assignment.playerIndex para asegurar la posiciÃ³n correcta en pantalla
+                SetupCameraChannels(camSystem, assignment.playerIndex);
+                ConfigureCameraViewport(camSystem.CM, assignment.playerIndex, totalPlayers);
                 camSystem.Canvas.worldCamera = camSystem.CM;
                 camSystem.Canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.None;
 
-                // Buscamos el AudioListener en la cámara referenciada por CameraSystem
+                // Buscamos el AudioListener en la cï¿½mara referenciada por CameraSystem
                 AudioListener listener = camSystem.CM.GetComponent<AudioListener>();
 
                 // Si existe y NO es el primer jugador (i > 0), lo eliminamos.
@@ -110,8 +126,8 @@ public class GameInitializer : MonoBehaviour
     {
         if (cam == null) return;
 
-        // Declaramos las variables UNA SOLA VEZ aquí arriba para evitar el error CS0136.
-        // X, Y = Posición inicial (0 a 1)
+        // Declaramos las variables UNA SOLA VEZ aquï¿½ arriba para evitar el error CS0136.
+        // X, Y = Posiciï¿½n inicial (0 a 1)
         // W, H = Ancho y Alto (0 a 1)
         float rectX, rectY, rectW, rectH;
 
@@ -137,14 +153,14 @@ public class GameInitializer : MonoBehaviour
                 rectX = (playerIndex == 0) ? 0f : 0.5f;
             }
         }
-        // --- CASO 2: 3 O MÁS JUGADORES (GRID AUTOMÁTICO) ---
+        // --- CASO 2: 3 O Mï¿½S JUGADORES (GRID AUTOMï¿½TICO) ---
         else
         {
             // Calculamos columnas y filas
             int cols = Mathf.CeilToInt(Mathf.Sqrt(totalPlayers));
             int rows = Mathf.CeilToInt((float)totalPlayers / cols);
 
-            // Ajuste estético para 5 y 6 jugadores (3 columnas x 2 filas se ve mejor en monitores anchos)
+            // Ajuste estï¿½tico para 5 y 6 jugadores (3 columnas x 2 filas se ve mejor en monitores anchos)
             if (totalPlayers >= 5 && totalPlayers <= 6)
             {
                 cols = 3;
@@ -154,7 +170,7 @@ public class GameInitializer : MonoBehaviour
             rectW = 1f / cols;
             rectH = 1f / rows;
 
-            // Calculamos posición en la grilla
+            // Calculamos posiciï¿½n en la grilla
             int colIndex = playerIndex % cols;
             int rowIndex = playerIndex / cols;
 
@@ -166,7 +182,7 @@ public class GameInitializer : MonoBehaviour
             rectY = invertedRowIndex * rectH;
         }
 
-        // Aplicamos el rectángulo final a la cámara
+        // Aplicamos el rectï¿½ngulo final a la cï¿½mara
         cam.rect = new Rect(rectX, rectY, rectW, rectH);
     }
 

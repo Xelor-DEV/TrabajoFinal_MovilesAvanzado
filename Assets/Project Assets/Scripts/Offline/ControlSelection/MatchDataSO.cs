@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Utilities;
 
 [CreateAssetMenu(fileName = "MatchData", menuName = "Game/MatchData")]
 public class MatchDataSO : ScriptableObject
@@ -13,19 +14,35 @@ public class MatchDataSO : ScriptableObject
     [Header("Runtime Data")]
     public List<PlayerAssignment> assignedPlayers = new List<PlayerAssignment>();
 
-    public void ClearData()
+    // CAMBIO: Inicializamos la lista con espacios vacíos (nulls)
+    public void InitializeList()
     {
         assignedPlayers.Clear();
+        for (int i = 0; i < maxPlayers; i++)
+        {
+            assignedPlayers.Add(null); // Creamos el hueco para el jugador
+        }
     }
 
-    public void SaveAssignment(int playerIndex, InputDevice device, string scheme)
+    public void SaveAssignment(int playerIndex, ReadOnlyArray<InputDevice> devices, string scheme)
     {
-        assignedPlayers.Add(new PlayerAssignment
+        PlayerAssignment newAssignment = new PlayerAssignment
         {
             playerIndex = playerIndex,
-            device = device,
-            controlScheme = scheme
-        });
+            controlScheme = scheme,
+            deviceIds = new List<int>()
+        };
+
+        foreach (var dev in devices)
+        {
+            newAssignment.deviceIds.Add(dev.deviceId);
+        }
+
+        // CAMBIO: En lugar de .Add (al final), insertamos en el índice EXACTO del jugador
+        if (playerIndex < assignedPlayers.Count)
+        {
+            assignedPlayers[playerIndex] = newAssignment;
+        }
     }
 }
 
@@ -33,6 +50,6 @@ public class MatchDataSO : ScriptableObject
 public class PlayerAssignment
 {
     public int playerIndex;
-    public InputDevice device;
     public string controlScheme;
+    public List<int> deviceIds; 
 }

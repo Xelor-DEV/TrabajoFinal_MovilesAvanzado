@@ -7,6 +7,7 @@ public class EnemyPatrol : MonoBehaviour
     public Entity targetEntity = Entity.Kart;
 
     [Header("Puntos de patrulla")]
+    [Tooltip("Arrastra aquí los objetos hijos que marcan la ruta")]
     public Transform puntoA;
     public Transform puntoB;
 
@@ -18,17 +19,29 @@ public class EnemyPatrol : MonoBehaviour
     public float fuerzaEmpuje = 20f;
 
     private Rigidbody rb;
-    private Vector3 targetPoint;
+    private Vector3 currentTargetPoint; // El destino actual
+    
+    // Variables para guardar las posiciones fijas del mundo
+    private Vector3 worldPosA;
+    private Vector3 worldPosB;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.constraints = RigidbodyConstraints.FreezeRotation;
 
-        // Comprobación de seguridad por si olvidaste asignar los puntos
+        // Comprobación de seguridad
         if (puntoA != null && puntoB != null)
         {
-            targetPoint = puntoB.position;
+            // --- CORRECCIÓN CLAVE ---
+            // Guardamos las posiciones exactas del mundo al iniciar el juego.
+            // Así, aunque el enemigo se mueva y arrastre los transforms hijos,
+            // nosotros recordamos dónde estaban al principio.
+            worldPosA = puntoA.position;
+            worldPosB = puntoB.position;
+
+            // Empezamos yendo hacia el punto B (usando la coordenada guardada, no el transform)
+            currentTargetPoint = worldPosB;
         }
         else
         {
@@ -38,7 +51,6 @@ public class EnemyPatrol : MonoBehaviour
 
     void FixedUpdate()
     {
-        // Solo nos movemos si los puntos existen
         if (puntoA != null && puntoB != null)
         {
             MoverPatrullaSinGirar();
@@ -47,8 +59,10 @@ public class EnemyPatrol : MonoBehaviour
 
     private void MoverPatrullaSinGirar()
     {
-        Vector3 direccion = (targetPoint - transform.position);
+        // Calculamos dirección hacia la coordenada guardada (currentTargetPoint)
+        Vector3 direccion = (currentTargetPoint - transform.position);
 
+        // Comprobamos distancia
         if (direccion.magnitude < 0.5f)
         {
             CambiarObjetivo();
@@ -57,16 +71,18 @@ public class EnemyPatrol : MonoBehaviour
         direccion.Normalize();
 
         Vector3 nuevaVelocidad = direccion * velocidad;
-        // Nota: linearVelocity se usa en Unity 6+. Si usas una versión anterior, cambia a rb.velocity
+        // Mantenemos la velocidad Y original para la gravedad
         rb.linearVelocity = new Vector3(nuevaVelocidad.x, rb.linearVelocity.y, nuevaVelocidad.z);
     }
 
     private void CambiarObjetivo()
     {
-        if (Vector3.Distance(targetPoint, puntoA.position) < 1f)
-            targetPoint = puntoB.position;
+        // Comparamos distancias usando las coordenadas fijas (worldPosA y worldPosB)
+        // Si estamos cerca de A, vamos a B. Si no, vamos a A.
+        if (Vector3.Distance(currentTargetPoint, worldPosA) < 0.1f) // Margen pequeño de error
+            currentTargetPoint = worldPosB;
         else
-            targetPoint = puntoA.position;
+            currentTargetPoint = worldPosA;
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -86,27 +102,42 @@ public class EnemyPatrol : MonoBehaviour
     }
 
     // ---------------------------------------------------------
-    // NUEVA SECCIÓN: GIZMOS PARA VISUALIZACIÓN
+    // GIZMOS ACTUALIZADOS
     // ---------------------------------------------------------
     private void OnDrawGizmos()
     {
-        // Si no hemos asignado los puntos, no dibujamos nada para evitar errores
         if (puntoA == null || puntoB == null) return;
+
+        Vector3 drawPosA;
+        Vector3 drawPosB;
+
+        // Si estamos jugando, dibujamos las posiciones "recordadas" (fijas en el mundo)
+        // Si estamos editando, dibujamos las posiciones de los transforms (para poder moverlos)
+        if (Application.isPlaying)
+        {
+            drawPosA = worldPosA;
+            drawPosB = worldPosB;
+        }
+        else
+        {
+            drawPosA = puntoA.position;
+            drawPosB = puntoB.position;
+        }
 
         // 1. Dibujar la línea de trayectoria
         Gizmos.color = Color.yellow;
-        Gizmos.DrawLine(puntoA.position, puntoB.position);
+        Gizmos.DrawLine(drawPosA, drawPosB);
 
-        // 2. Dibujar esferas en los puntos para verlos claramente
+        // 2. Dibujar esferas
         Gizmos.color = Color.red;
-        Gizmos.DrawSphere(puntoA.position, 0.5f); // El 0.5f es el radio de la esfera
-        Gizmos.DrawSphere(puntoB.position, 0.5f);
+        Gizmos.DrawSphere(drawPosA, 0.5f); 
+        Gizmos.DrawSphere(drawPosB, 0.5f);
 
-        // 3. (Opcional) Dibujar una línea desde el enemigo hasta su destino actual
+        // 3. Línea hacia el objetivo actual
         if (Application.isPlaying)
         {
             Gizmos.color = Color.green;
-            Gizmos.DrawLine(transform.position, targetPoint);
+            Gizmos.DrawLine(transform.position, currentTargetPoint);
         }
     }
 }
