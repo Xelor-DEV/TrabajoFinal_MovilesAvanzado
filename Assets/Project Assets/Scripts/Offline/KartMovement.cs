@@ -20,7 +20,7 @@ public class KartMovement : MonoBehaviour
     [SerializeField] private float boostTimer;
     [SerializeField] private bool isBoosted;
 
-    // Events para comunicación
+    // Events para comunicaciï¿½n
     public UnityEvent<float, float, bool> OnMovementUpdate; // speed, inputY, isBoosted
     public UnityEvent<Vector2> OnVFXUpdate; // input (x,y)
 
@@ -31,6 +31,7 @@ public class KartMovement : MonoBehaviour
     // Estado de control
     private bool isInputEnabled = true;
     private bool isExternalForceActive = false;
+    private float externalSpeedMultiplier = 1.0f;
 
     // Nuevo: Estado de tackleada
     private bool isTackling = false;
@@ -61,10 +62,10 @@ public class KartMovement : MonoBehaviour
 
     private void Update()
     {
-        // MODIFICACIÓN: Lógica unificada para enviar eventos de animación
+        // MODIFICACIï¿½N: Lï¿½gica unificada para enviar eventos de animaciï¿½n
         if (isTackling)
         {
-            // Durante tackleada: enviar valores simulados para mantener animación
+            // Durante tackleada: enviar valores simulados para mantener animaciï¿½n
             OnMovementUpdate?.Invoke(CurrentSpeed, 1f, isBoosted);
             OnVFXUpdate?.Invoke(new Vector2(0f, 1f)); // Input simulado hacia adelante
         }
@@ -80,7 +81,7 @@ public class KartMovement : MonoBehaviour
         }
         else
         {
-            // Cuando el input está deshabilitado, forzar valores cero para animaciones
+            // Cuando el input estï¿½ deshabilitado, forzar valores cero para animaciones
             OnMovementUpdate?.Invoke(CurrentSpeed, 0, false);
             OnVFXUpdate?.Invoke(Vector2.zero);
         }
@@ -91,7 +92,7 @@ public class KartMovement : MonoBehaviour
         if (isInputEnabled || isExternalForceActive)
         {
             HandleMovement();
-            // MODIFICACIÓN: Solo aplicar steering si no está haciendo tackleada
+            // MODIFICACIï¿½N: Solo aplicar steering si no estï¿½ haciendo tackleada
             if (!isTackling)
             {
                 HandleSteering();
@@ -107,7 +108,7 @@ public class KartMovement : MonoBehaviour
 
     private void HandleBoostSystem()
     {
-        // MODIFICACIÓN: No actualizar boost durante tackleada
+        // MODIFICACIï¿½N: No actualizar boost durante tackleada
         if (isTackling) return;
 
         bool shouldActivateBoost = input.y >= kartStats.boostActivationInput;
@@ -143,12 +144,17 @@ public class KartMovement : MonoBehaviour
         }
     }
 
+    public void SetSpeedMultiplier(float multiplier)
+    {
+        externalSpeedMultiplier = multiplier;
+    }
+
     private void HandleMovement()
     {
         // Si hay fuerzas externas activas, no aplicar movimiento normal
         if (isExternalForceActive) return;
 
-        float currentMaxSpeed = isBoosted ? kartStats.boostedMaxSpeed : kartStats.maxSpeed;
+        float currentMaxSpeed = (isBoosted ? kartStats.boostedMaxSpeed : kartStats.maxSpeed) * externalSpeedMultiplier;
         float currentDeceleration = isBoosted ? kartStats.boostedDeceleration : kartStats.deceleration;
 
         // Guardamos la velocidad vertical actual para no perderla
@@ -174,7 +180,7 @@ public class KartMovement : MonoBehaviour
         }
         else
         {
-            // Deceleración solo horizontal
+            // Deceleraciï¿½n solo horizontal
             Vector3 newHorizontalVelocity = Vector3.Lerp(currentHorizontalVelocity, Vector3.zero,
                 currentDeceleration * Time.fixedDeltaTime);
 
@@ -190,7 +196,7 @@ public class KartMovement : MonoBehaviour
 
         float boostMultiplier = isBoosted ? 1.2f : 1f;
 
-        // MODIFICACIÓN: Durante tackleada, mantener rotación neutral
+        // MODIFICACIï¿½N: Durante tackleada, mantener rotaciï¿½n neutral
         if (!isTackling && Mathf.Abs(input.x) > kartStats.minInputThreshold)
         {
             targetEuler.z = -input.x * kartStats.maxTiltZ * boostMultiplier;
@@ -214,7 +220,8 @@ public class KartMovement : MonoBehaviour
 
     private void ApplySpeedLimit()
     {
-        float currentMaxSpeed = isBoosted ? kartStats.boostedMaxSpeed : kartStats.maxSpeed;
+        // MODIFICADO: El lÃ­mite tambiÃ©n respeta el multiplicador externo
+        float currentMaxSpeed = (isBoosted ? kartStats.boostedMaxSpeed : kartStats.maxSpeed) * externalSpeedMultiplier;
 
         if (rb.linearVelocity.magnitude > currentMaxSpeed)
         {
@@ -222,7 +229,7 @@ public class KartMovement : MonoBehaviour
         }
     }
 
-    // Métodos para controlar el input
+    // Mï¿½todos para controlar el input
     public void EnableInput()
     {
         isInputEnabled = true;
@@ -240,7 +247,7 @@ public class KartMovement : MonoBehaviour
         isExternalForceActive = active;
     }
 
-    // NUEVO MÉTODO: Para controlar estado de tackleada
+    // NUEVO Mï¿½TODO: Para controlar estado de tackleada
     public void SetTacklingState(bool tackling)
     {
         isTackling = tackling;

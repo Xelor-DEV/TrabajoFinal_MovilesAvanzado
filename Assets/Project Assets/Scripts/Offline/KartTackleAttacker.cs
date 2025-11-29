@@ -9,6 +9,7 @@ public class KartTackleAttacker : MonoBehaviour
     [SerializeField] private float tackleDuration = 1.5f;
     [SerializeField] private float tackleCooldown = 3f;
     [SerializeField] private float tackleForce = 35f;
+    [SerializeField] private float movementSpeedMultiplier = 1.5f;
 
     [Header("Hitbox Settings")] // NUEVO: Configuración del área de golpe
     [SerializeField] private float tackleRadius = 2.0f; // Radio del "Sphere Overlap"
@@ -29,6 +30,8 @@ public class KartTackleAttacker : MonoBehaviour
     public UnityEvent OnTargetHit;
     public UnityEvent OnCooldownStarted;
     public UnityEvent OnCooldownFinished;
+
+    public UnityEvent<float> OnSpeedMultiplierChanged;
 
     // State variables
     private bool isTackling = false;
@@ -102,7 +105,12 @@ public class KartTackleAttacker : MonoBehaviour
     {
         isTackling = true;
         canTackle = false;
+
+        // 1. Avisar que empezó el tackle (lógica general)
         OnTackleStarted?.Invoke();
+        
+        // 2. NUEVO: Enviar el multiplicador de velocidad al KartMovement (1.5x)
+        OnSpeedMultiplierChanged?.Invoke(movementSpeedMultiplier);
 
         Vector3 tackleDirection = transform.forward;
         rb.AddForce(tackleDirection * tackleForce, ForceMode.Impulse);
@@ -115,10 +123,14 @@ public class KartTackleAttacker : MonoBehaviour
     private void EndTackle()
     {
         isTackling = false;
+        
         OnTackleEnded?.Invoke();
+
+        // 3. NUEVO: Restablecer el multiplicador a la normalidad (1.0x)
+        OnSpeedMultiplierChanged?.Invoke(1.0f); 
+
         StartCooldown();
     }
-
     private void StartCooldown()
     {
         if (cooldownCoroutine != null) StopCoroutine(cooldownCoroutine);
