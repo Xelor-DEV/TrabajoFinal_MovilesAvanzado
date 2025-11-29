@@ -46624,11 +46624,11 @@ GameObject:
   - component: {fileID: 8210664660641673949}
   - component: {fileID: 1004635564759076202}
   - component: {fileID: 8825486302062554974}
+  - component: {fileID: 1341588270653507880}
   - component: {fileID: 5621255951119205638}
   - component: {fileID: 4216108782686953918}
   - component: {fileID: 5555466458778709279}
   - component: {fileID: 5382873911202590644}
-  - component: {fileID: 1341588270653507880}
   m_Layer: 0
   m_Name: PlayerOffline
   m_TagString: Player
@@ -47197,6 +47197,33 @@ MonoBehaviour:
   OnVoidFallDetected:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1341588270653507880
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7836153539970892115}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a948e6ae0da1d74abe2f6588b00283f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  kartMovement: {fileID: 3261741665433595781}
+  kartJump: {fileID: 5469283180296300727}
+  kartTackle: {fileID: 4331192178884072151}
+  kartTracker: {fileID: 8825486302062554974}
+  jumpClipIndex: 0
+  voidFallClipIndex: 1
+  checkpointClipIndex: 2
+  tackleStartClipIndex: 3
+  tackleHitClipIndex: 4
+  engineRunClipIndex: 5
+  driftClipIndex: 6
+  engineSource: {fileID: 3695054438721152706}
+  driftSource: {fileID: 5276017939751100}
+  minInputForRunSound: 0.1
+  minInputForTurnSound: 0.1
 --- !u!54 &5621255951119205638
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -47363,33 +47390,6 @@ MonoBehaviour:
   m_DefaultActionMap: Gameplay
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 3371588070316330728}
---- !u!114 &1341588270653507880
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7836153539970892115}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5a948e6ae0da1d74abe2f6588b00283f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  kartMovement: {fileID: 3261741665433595781}
-  kartJump: {fileID: 5469283180296300727}
-  kartTackle: {fileID: 4331192178884072151}
-  kartTracker: {fileID: 8825486302062554974}
-  jumpClipIndex: 0
-  voidFallClipIndex: 1
-  checkpointClipIndex: 2
-  tackleStartClipIndex: 3
-  tackleHitClipIndex: 4
-  engineRunClipIndex: 5
-  driftClipIndex: 6
-  engineSource: {fileID: 3695054438721152706}
-  driftSource: {fileID: 5276017939751100}
-  minSpeedForRunSound: 0.1
-  minInputForTurnSound: 0.1
 --- !u!1 &7844495846818375868
 GameObject:
   m_ObjectHideFlags: 0
