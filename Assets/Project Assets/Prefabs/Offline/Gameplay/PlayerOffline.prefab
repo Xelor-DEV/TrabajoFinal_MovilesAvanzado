@@ -46805,7 +46805,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tackleDuration: 1.5
   tackleCooldown: 5
-  tackleForce: 35
+  tackleForce: 55
+  tackleRadius: 2.7
+  targetLayers:
+    serializedVersion: 2
+    m_Bits: 1
+  hitboxOffset: {x: 0, y: 0.5, z: 0}
   targetEntity: 0
   obstacleEntity: 1
   rb: {fileID: 5621255951119205638}

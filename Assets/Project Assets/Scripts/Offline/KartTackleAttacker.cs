@@ -10,6 +10,11 @@ public class KartTackleAttacker : MonoBehaviour
     [SerializeField] private float tackleCooldown = 3f;
     [SerializeField] private float tackleForce = 35f;
 
+    [Header("Hitbox Settings")] // NUEVO: Configuraci√≥n del √°rea de golpe
+    [SerializeField] private float tackleRadius = 2.0f; // Radio del "Sphere Overlap"
+    [SerializeField] private LayerMask targetLayers;    // Capas a las que podemos golpear (ej: Players)
+    [SerializeField] private Vector3 hitboxOffset = Vector3.zero; // Para centrar la esfera un poco adelante si quieres
+
     [Header("Target Settings")]
     [SerializeField] private Entity targetEntity = Entity.Kart;
     [SerializeField] private Entity obstacleEntity = Entity.Wall;
@@ -22,14 +27,18 @@ public class KartTackleAttacker : MonoBehaviour
     public UnityEvent OnTackleStarted;
     public UnityEvent OnTackleEnded;
     public UnityEvent OnTargetHit;
-    public UnityEvent OnCooldownStarted;  // Nuevo evento para cuando inicia el cooldown
-    public UnityEvent OnCooldownFinished; // Nuevo evento para cuando termina el cooldown
+    public UnityEvent OnCooldownStarted;
+    public UnityEvent OnCooldownFinished;
 
     // State variables
     private bool isTackling = false;
     private bool canTackle = true;
     private Coroutine tackleCoroutine;
     private Coroutine cooldownCoroutine;
+    
+    // Optimization Buffer
+    // Usamos un buffer fijo para no generar Garbage Collection (GC) en cada frame
+    private readonly Collider[] hitBuffer = new Collider[10]; 
 
     // Properties
     public bool IsTackling => isTackling;
@@ -40,6 +49,39 @@ public class KartTackleAttacker : MonoBehaviour
     {
         if (rb == null) rb = GetComponent<Rigidbody>();
         if (entityIdentifier == null) entityIdentifier = GetComponent<EntityIdentifier>();
+    }
+
+    // NUEVO: Chequeo constante mientras tacleamos
+    private void FixedUpdate()
+    {
+        if (isTackling)
+        {
+            CheckForTargets();
+        }
+    }
+
+    private void CheckForTargets()
+    {
+        // Usamos NonAlloc para m√°xima optimizaci√≥n de memoria
+        Vector3 center = transform.position + transform.TransformDirection(hitboxOffset);
+        int numHits = Physics.OverlapSphereNonAlloc(center, tackleRadius, hitBuffer, targetLayers);
+
+        for (int i = 0; i < numHits; i++)
+        {
+            Collider hit = hitBuffer[i];
+
+            // 1. Ignorarnos a nosotros mismos
+            if (hit.gameObject == gameObject) continue;
+
+            // 2. Verificar si tiene EntityIdentifier
+            EntityIdentifier otherEntity = hit.GetComponent<EntityIdentifier>();
+            if (otherEntity != null && otherEntity.Entity == targetEntity)
+            {
+                // Encontramos una v√≠ctima v√°lida
+                HandleTargetHit(hit.gameObject);
+                break; // Salimos del loop para no golpear a varios o al mismo dos veces en un frame
+            }
+        }
     }
 
     public void OnTackle(InputAction.CallbackContext context)
@@ -58,18 +100,13 @@ public class KartTackleAttacker : MonoBehaviour
 
     private IEnumerator TackleRoutine()
     {
-        // Setup tackle state
         isTackling = true;
         canTackle = false;
-
-        // Activar eventos
         OnTackleStarted?.Invoke();
 
-        // Aplicar fuerza inicial de tackleada
         Vector3 tackleDirection = transform.forward;
         rb.AddForce(tackleDirection * tackleForce, ForceMode.Impulse);
 
-        // Mantener el estado por la duraciÛn
         yield return new WaitForSeconds(tackleDuration);
 
         EndTackle();
@@ -79,8 +116,6 @@ public class KartTackleAttacker : MonoBehaviour
     {
         isTackling = false;
         OnTackleEnded?.Invoke();
-
-        // Iniciar cooldown despuÈs de que termina la tackleada
         StartCooldown();
     }
 
@@ -92,19 +127,14 @@ public class KartTackleAttacker : MonoBehaviour
 
     private IEnumerator CooldownRoutine()
     {
-        // Notificar que inicia el cooldown
         OnCooldownStarted?.Invoke();
-
-        // Esperar el tiempo de cooldown
         yield return new WaitForSeconds(tackleCooldown);
-
-        // Permitir tacklear de nuevo
         canTackle = true;
-
-        // Notificar que terminÛ el cooldown
         OnCooldownFinished?.Invoke();
     }
 
+    // Mantenemos OnCollisionEnter SOLO para obstaculos (paredes)
+    // Ya no necesitamos detectar Karts aqu√≠ porque el OverlapSphere se encarga de eso.
     private void OnCollisionEnter(Collision collision)
     {
         if (!isTackling) return;
@@ -113,46 +143,31 @@ public class KartTackleAttacker : MonoBehaviour
 
         if (otherEntity != null)
         {
-            // Check if we hit a target entity
-            if (otherEntity.Entity == targetEntity)
-            {
-                HandleTargetHit(collision.gameObject, collision.contacts[0].point);
-                return;
-            }
-
-            // Check if we hit an obstacle
             if (otherEntity.Entity == obstacleEntity)
             {
-                // Stop tackle when hitting obstacle
                 if (tackleCoroutine != null) StopCoroutine(tackleCoroutine);
                 EndTackle();
-                return;
             }
         }
     }
 
-    private void HandleTargetHit(GameObject target, Vector3 contactPoint)
+    // Simplificado: Ya no necesitamos el ContactPoint preciso de la colisi√≥n f√≠sica
+    private void HandleTargetHit(GameObject target)
     {
-        // Stop our tackle
         if (tackleCoroutine != null) StopCoroutine(tackleCoroutine);
 
-        // Buscar el componente KartTackleVictim en el objetivo
         KartTackleVictim victim = target.GetComponent<KartTackleVictim>();
         if (victim != null)
         {
-            // Calcular direcciÛn del empuje (desde nuestro centro al punto de contacto)
+            // Calculamos direcci√≥n: Desde m√≠ hacia la v√≠ctima
             Vector3 pushDirection = (target.transform.position - transform.position).normalized;
-
-            // Llamar directamente al mÈtodo del vÌctima
             victim.ReceiveTackle(pushDirection, tackleForce * 0.7f, 8f, 1.5f);
         }
 
         OnTargetHit?.Invoke();
-
         EndTackle();
     }
 
-    // MÈtodo para forzar el fin del cooldown (por si acaso)
     public void ForceEndCooldown()
     {
         if (cooldownCoroutine != null)
@@ -162,5 +177,13 @@ public class KartTackleAttacker : MonoBehaviour
         }
         canTackle = true;
         OnCooldownFinished?.Invoke();
+    }
+
+    // NUEVO: Visualizaci√≥n en el editor para ajustar el radio perfecto
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = new Color(1, 0, 0, 0.3f); // Rojo transparente
+        Vector3 center = transform.position + transform.TransformDirection(hitboxOffset);
+        Gizmos.DrawSphere(center, tackleRadius);
     }
 }
