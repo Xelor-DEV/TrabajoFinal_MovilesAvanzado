@@ -15,6 +15,7 @@ public class KartTackleVictim : MonoBehaviour
     // State variables
     private bool isPushed = false;
     private Coroutine pushCoroutine;
+    private bool isInvulnerable = false;
 
     // Properties
     public bool IsPushed => isPushed;
@@ -23,12 +24,6 @@ public class KartTackleVictim : MonoBehaviour
     {
         if (rb == null) rb = GetComponent<Rigidbody>();
         if (entityIdentifier == null) entityIdentifier = GetComponent<EntityIdentifier>();
-    }
-
-    public void ReceiveTackle(Vector3 pushDirection, float pushForce, float pushUpForce, float pushDuration)
-    {
-        if (pushCoroutine != null) StopCoroutine(pushCoroutine);
-        pushCoroutine = StartCoroutine(PushRoutine(pushDirection, pushForce, pushUpForce, pushDuration));
     }
 
     private IEnumerator PushRoutine(Vector3 pushDirection, float pushForce, float pushUpForce, float pushDuration)
@@ -50,6 +45,20 @@ public class KartTackleVictim : MonoBehaviour
     {
         isPushed = false;
         OnPushEnded?.Invoke();
+    }
+
+    public void SetInvulnerable(bool state)
+    {
+        isInvulnerable = state;
+    }
+
+    // MODIFICAR el método ReceiveTackle para chequear esto al principio:
+    public void ReceiveTackle(Vector3 pushDirection, float pushForce, float pushUpForce, float pushDuration)
+    {
+        if (isInvulnerable) return; // <--- NUEVA LÍNEA: Si es invulnerable, ignoramos el golpe.
+
+        if (pushCoroutine != null) StopCoroutine(pushCoroutine);
+        pushCoroutine = StartCoroutine(PushRoutine(pushDirection, pushForce, pushUpForce, pushDuration));
     }
 
     private void OnCollisionEnter(Collision collision)

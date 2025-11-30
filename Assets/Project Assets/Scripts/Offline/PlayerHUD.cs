@@ -224,6 +224,25 @@ public class PlayerHUD : MonoBehaviour
         }
     }
 
+    // Añadir en PlayerHUD.cs
+    public void UpdateSpellIcon(Sprite icon, bool active)
+    {
+        if (spellIcon != null)
+        {
+            spellIcon.sprite = icon;
+            // Si hay icono es opaco, si no es transparente
+            spellIcon.color = active ? Color.white : new Color(1, 1, 1, 0);
+
+            // Un pequeño efecto Pop visual
+            if (active)
+            {
+                spellIcon.transform.DOKill();
+                spellIcon.transform.localScale = Vector3.zero;
+                spellIcon.transform.DOScale(1f, 0.3f).SetEase(Ease.OutBack);
+            }
+        }
+    }
+
     public void HideCenterMessage()
     {
         if (centerMessageText != null)
