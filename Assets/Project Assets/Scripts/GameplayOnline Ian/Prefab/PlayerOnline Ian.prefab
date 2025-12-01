@@ -7182,14 +7182,14 @@ GameObject:
   m_Component:
   - component: {fileID: 3119152121852561937}
   - component: {fileID: 2083953547962242090}
-  - component: {fileID: 774468486872254648}
-  - component: {fileID: 607483669379233550}
-  - component: {fileID: 3587875089532435307}
-  - component: {fileID: 802552610307563637}
+  - component: {fileID: 2068278725972116217}
+  - component: {fileID: -822144299140472847}
+  - component: {fileID: -2809558573254077722}
+  - component: {fileID: -3796372726593717137}
+  - component: {fileID: -1705192744441124347}
   - component: {fileID: 3950812359682767290}
   - component: {fileID: 4271127944311186793}
   - component: {fileID: 8141646135751919434}
-  - component: {fileID: 2068278725972116217}
   - component: {fileID: 8983994497570968303}
   - component: {fileID: 568061294442379677}
   - component: {fileID: 8054777563935848520}
@@ -7204,7 +7204,7 @@ GameObject:
   - component: {fileID: 4383528872029998919}
   - component: {fileID: 6407371199362844444}
   m_Layer: 0
-  m_Name: PlayerOnline
+  m_Name: PlayerOnline Ian
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7249,7 +7249,7 @@ MonoBehaviour:
   pivot: {fileID: 1681650809794905655}
   entity: 0
   isTargetable: 1
---- !u!114 &774468486872254648
+--- !u!114 &2068278725972116217
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -7258,21 +7258,47 @@ MonoBehaviour:
   m_GameObject: {fileID: 839659936913768156}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e13b33d2c88631548a48df7125c863d3, type: 3}
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  kartStats: {fileID: 11400000, guid: a2d80d2dc873ce74ab45f5ee221ef0a3, type: 2}
+  GlobalObjectIdHash: 1878725597
+  InScenePlacedSourceGlobalObjectIdHash: 4253153058
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 0
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
+--- !u!114 &-822144299140472847
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 839659936913768156}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97b7be47a87a9bf4bbeea07a6fee997b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  kartStats: {fileID: 11400000, guid: 953426cf8a3ad2349beaefa8e5665b34, type: 2}
   rb: {fileID: 2675069295502293622}
-  modelChild: {fileID: 8106175733377985758}
+  modelChild: {fileID: 3119152121852561937}
   boostTimer: 0
   isBoosted: 0
   OnMovementUpdate:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 4271127944311186793}
+      - m_Target: {fileID: 4271127944311186793, guid: 8e2b4cb29ed017b43b6c7e289f71dd4c, type: 3}
         m_TargetAssemblyTypeName: KartAnimationController, Assembly-CSharp
-        m_MethodName: HandleMovementData
-        m_Mode: 0
+        m_MethodName: HandleGroundedStateChanged
+        m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -7284,7 +7310,7 @@ MonoBehaviour:
   OnVFXUpdate:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3950812359682767290}
+      - m_Target: {fileID: 3950812359682767290, guid: 8e2b4cb29ed017b43b6c7e289f71dd4c, type: 3}
         m_TargetAssemblyTypeName: KartVFX, Assembly-CSharp
         m_MethodName: HandleVFXData
         m_Mode: 0
@@ -7296,7 +7322,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &607483669379233550
+--- !u!114 &-2809558573254077722
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -7305,9 +7331,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 839659936913768156}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 305880bf9dd0c17458707519e9e29486, type: 3}
+  m_Script: {fileID: 11500000, guid: e35392e6675e88040b1da2ff8b460e74, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   jumpHeight: 10
   groundCheckRadius: 0.2
   groundLayerMask:
@@ -7321,7 +7348,7 @@ MonoBehaviour:
   OnGroundedStateChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 4271127944311186793}
+      - m_Target: {fileID: 4271127944311186793, guid: 8e2b4cb29ed017b43b6c7e289f71dd4c, type: 3}
         m_TargetAssemblyTypeName: KartAnimationController, Assembly-CSharp
         m_MethodName: HandleGroundedStateChanged
         m_Mode: 0
@@ -7336,7 +7363,7 @@ MonoBehaviour:
   OnJumpingStateChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 4271127944311186793}
+      - m_Target: {fileID: 4271127944311186793, guid: 8e2b4cb29ed017b43b6c7e289f71dd4c, type: 3}
         m_TargetAssemblyTypeName: KartAnimationController, Assembly-CSharp
         m_MethodName: HandleJumpingStateChanged
         m_Mode: 0
@@ -7351,7 +7378,7 @@ MonoBehaviour:
   OnFallingStateChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 4271127944311186793}
+      - m_Target: {fileID: 4271127944311186793, guid: 8e2b4cb29ed017b43b6c7e289f71dd4c, type: 3}
         m_TargetAssemblyTypeName: KartAnimationController, Assembly-CSharp
         m_MethodName: HandleFallingStateChanged
         m_Mode: 0
@@ -7366,7 +7393,7 @@ MonoBehaviour:
   OnJumpPerformed:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &3587875089532435307
+--- !u!114 &-3796372726593717137
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -7375,9 +7402,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 839659936913768156}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1c2f706f7ae27aa459633b48b44a1c61, type: 3}
+  m_Script: {fileID: 11500000, guid: 160eee3c747e10e48a11a6ddc087840a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   tackleDuration: 1.5
   tackleCooldown: 5
   tackleForce: 55
@@ -7385,7 +7413,7 @@ MonoBehaviour:
   tackleRadius: 2.7
   targetLayers:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 0
   hitboxOffset: {x: 0, y: 0.5, z: 0}
   targetEntity: 0
   obstacleEntity: 1
@@ -7394,124 +7422,40 @@ MonoBehaviour:
   OnTackleStarted:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 774468486872254648}
-        m_TargetAssemblyTypeName: KartMovement, Assembly-CSharp
+      - m_Target: {fileID: 774468486872254648, guid: 8e2b4cb29ed017b43b6c7e289f71dd4c, type: 3}
+        m_TargetAssemblyTypeName: 
         m_MethodName: DisableInput
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgumentAssemblyTypeName: 
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 774468486872254648}
-        m_TargetAssemblyTypeName: KartMovement, Assembly-CSharp
+      - m_Target: {fileID: 774468486872254648, guid: 8e2b4cb29ed017b43b6c7e289f71dd4c, type: 3}
+        m_TargetAssemblyTypeName: 
         m_MethodName: SetExternalForceActive
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
-      - m_Target: {fileID: 774468486872254648}
-        m_TargetAssemblyTypeName: KartMovement, Assembly-CSharp
-        m_MethodName: SetTacklingState
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
-      - m_Target: {fileID: 607483669379233550}
-        m_TargetAssemblyTypeName: KartJump, Assembly-CSharp
-        m_MethodName: SetTackling
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
-      - m_Target: {fileID: 3950812359682767290}
-        m_TargetAssemblyTypeName: KartVFX, Assembly-CSharp
-        m_MethodName: ActivateNitro
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgumentAssemblyTypeName: 
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
-          m_BoolArgument: 1
+          m_BoolArgument: 0
         m_CallState: 2
   OnTackleEnded:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 774468486872254648}
-        m_TargetAssemblyTypeName: KartMovement, Assembly-CSharp
-        m_MethodName: EnableInput
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: 
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 774468486872254648}
-        m_TargetAssemblyTypeName: KartMovement, Assembly-CSharp
-        m_MethodName: SetExternalForceActive
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 774468486872254648}
-        m_TargetAssemblyTypeName: KartMovement, Assembly-CSharp
-        m_MethodName: SetTacklingState
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 607483669379233550}
-        m_TargetAssemblyTypeName: KartJump, Assembly-CSharp
-        m_MethodName: SetTackling
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 3950812359682767290}
-        m_TargetAssemblyTypeName: KartVFX, Assembly-CSharp
-        m_MethodName: DeactivateNitro
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgumentAssemblyTypeName: 
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -7520,13 +7464,13 @@ MonoBehaviour:
   OnTargetHit:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3950812359682767290}
-        m_TargetAssemblyTypeName: KartVFX, Assembly-CSharp
-        m_MethodName: PlayAttackerShake
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: 
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgumentAssemblyTypeName: 
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -7535,13 +7479,13 @@ MonoBehaviour:
   OnCooldownStarted:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 8141646135751919434}
-        m_TargetAssemblyTypeName: PlayerHUD, Assembly-CSharp
-        m_MethodName: StartPushCooldown
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: 
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgumentAssemblyTypeName: 
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -7550,13 +7494,13 @@ MonoBehaviour:
   OnCooldownFinished:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 8141646135751919434}
-        m_TargetAssemblyTypeName: PlayerHUD, Assembly-CSharp
-        m_MethodName: ResetPushAbility
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: 
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgumentAssemblyTypeName: 
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -7565,19 +7509,19 @@ MonoBehaviour:
   OnSpeedMultiplierChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 774468486872254648}
-        m_TargetAssemblyTypeName: KartMovement, Assembly-CSharp
-        m_MethodName: SetSpeedMultiplier
-        m_Mode: 0
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: 
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgumentAssemblyTypeName: 
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &802552610307563637
+--- !u!114 &-1705192744441124347
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -7586,96 +7530,37 @@ MonoBehaviour:
   m_GameObject: {fileID: 839659936913768156}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 500f6fca30228af47bddfe0c25af8493, type: 3}
+  m_Script: {fileID: 11500000, guid: 3e48569a4a6bc8a4ea58111d434a79f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   rb: {fileID: 2675069295502293622}
   entityIdentifier: {fileID: 2083953547962242090}
   OnPushStarted:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 774468486872254648}
-        m_TargetAssemblyTypeName: KartMovement, Assembly-CSharp
-        m_MethodName: DisableInput
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: 
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgumentAssemblyTypeName: 
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 774468486872254648}
-        m_TargetAssemblyTypeName: KartMovement, Assembly-CSharp
-        m_MethodName: SetExternalForceActive
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
-      - m_Target: {fileID: 7862540626368897988}
-        m_TargetAssemblyTypeName: GanzSe.ModularHeroController, Assembly-CSharp
-        m_MethodName: ApplyPushedEffect
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
-      - m_Target: {fileID: 3950812359682767290}
-        m_TargetAssemblyTypeName: KartVFX, Assembly-CSharp
-        m_MethodName: PlayVictimShake
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
         m_CallState: 2
   OnPushEnded:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 774468486872254648}
-        m_TargetAssemblyTypeName: KartMovement, Assembly-CSharp
-        m_MethodName: EnableInput
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: 
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 774468486872254648}
-        m_TargetAssemblyTypeName: KartMovement, Assembly-CSharp
-        m_MethodName: SetExternalForceActive
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 7862540626368897988}
-        m_TargetAssemblyTypeName: GanzSe.ModularHeroController, Assembly-CSharp
-        m_MethodName: RemovePushedEffect
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgumentAssemblyTypeName: 
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -7747,7 +7632,7 @@ MonoBehaviour:
   popInDuration: 0.3
   popOutDuration: 0.2
   overshootScale: 1.1
-  tackleAttacker: {fileID: 3587875089532435307}
+  tackleAttacker: {fileID: 0}
   positionText: {fileID: 304543401239006733}
   positionSuffixText: {fileID: 7792730428724284983}
   playerLabelText: {fileID: 4145096813033343676}
@@ -7755,31 +7640,6 @@ MonoBehaviour:
   posOvershoot: 1.2
   centerMessageText: {fileID: 6592514593332375537}
   spellIcon: {fileID: 8698120910429637607}
---- !u!114 &2068278725972116217
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 839659936913768156}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 4253153058
-  InScenePlacedSourceGlobalObjectIdHash: 4253153058
-  DeferredDespawnTick: 0
-  Ownership: 1
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 0
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
-  SyncOwnerTransformWhenParented: 1
-  AllowOwnerToParent: 0
 --- !u!114 &8983994497570968303
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7815,9 +7675,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a948e6ae0da1d74abe2f6588b00283f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  kartMovement: {fileID: 774468486872254648}
-  kartJump: {fileID: 607483669379233550}
-  kartTackle: {fileID: 3587875089532435307}
+  kartMovement: {fileID: 0}
+  kartJump: {fileID: 0}
+  kartTackle: {fileID: 0}
   kartTracker: {fileID: 0}
   jumpClipIndex: 0
   voidFallClipIndex: 1
@@ -7842,8 +7702,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88a1600d043cbfa429052e6276650bb2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  kartMovement: {fileID: 774468486872254648}
-  tackleVictim: {fileID: 802552610307563637}
+  kartMovement: {fileID: 0}
+  tackleVictim: {fileID: 0}
   hud: {fileID: 8141646135751919434}
   tracker: {fileID: 0}
   shield: {fileID: 3019045519344707426}
@@ -7955,7 +7815,7 @@ MonoBehaviour:
     m_ActionName: 'StartScreen/Start[/Keyboard/anyKey,/Mouse/leftButton]'
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 774468486872254648}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: KartMovement, Assembly-CSharp
         m_MethodName: OnMove
         m_Mode: 0
@@ -7971,7 +7831,7 @@ MonoBehaviour:
     m_ActionName: 'Gameplay/Move[/Keyboard/w,/Keyboard/s,/Keyboard/a,/Keyboard/d]'
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 607483669379233550}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: KartJump, Assembly-CSharp
         m_MethodName: OnJump
         m_Mode: 0
@@ -8003,7 +7863,7 @@ MonoBehaviour:
     m_ActionName: 'Gameplay/UseItem[/Keyboard/e,/Mouse/rightButton]'
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3587875089532435307}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: KartTackleAttacker, Assembly-CSharp
         m_MethodName: OnTackle
         m_Mode: 0
@@ -8290,7 +8150,7 @@ MonoBehaviour:
   playerInput: {fileID: 4015835024666784874}
   playerHUD: {fileID: 8141646135751919434}
   hudCanvas: {fileID: 6783882870786115276}
-  kartMovement: {fileID: 774468486872254648}
+  kartMovement: {fileID: 0}
 --- !u!1 &841914988389695159
 GameObject:
   m_ObjectHideFlags: 0
