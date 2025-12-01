@@ -7,6 +7,8 @@ public class StartingGridManager : MonoBehaviour
     [Tooltip("Arrastra aquí los Transforms de las posiciones de salida en orden (1º, 2º, 3º...)")]
     [SerializeField] private Transform[] spawnPoints;
 
+    public Transform[] SpawnPoints => spawnPoints;
+
     public Transform GetSpawnPoint(int index)
     {
         if (spawnPoints == null || spawnPoints.Length == 0)
