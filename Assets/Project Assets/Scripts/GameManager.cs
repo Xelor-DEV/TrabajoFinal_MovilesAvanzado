@@ -1,6 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 
+/*
 public class GameManager : NetworkBehaviour
 {
     public GameObject playerPrefab;
@@ -24,3 +25,4 @@ public class GameManager : NetworkBehaviour
 
     }
 }
+*/

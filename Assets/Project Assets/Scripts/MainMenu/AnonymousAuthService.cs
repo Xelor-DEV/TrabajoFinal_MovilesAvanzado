@@ -23,6 +23,9 @@ public class AnonymousAuthService : BaseAuthService
                 return;
             }
 
+            // Limpiar token de sesión
+            AuthenticationService.Instance.ClearSessionToken();
+
             // Marcar este servicio como la fuente activa de autenticación
             isActiveAuthSource = true;
 

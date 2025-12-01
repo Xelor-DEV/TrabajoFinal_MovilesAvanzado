@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff6669f59538ed347997597ade6ae1e9, type: 3}
+  m_Name: Punishment of Zeus
+  m_EditorClassIdentifier: 
+  spellName: Punishment of Zeus
+  icon: {fileID: 1576696377, guid: 2f2d9fa7ce12bf743b6520a60bed0553, type: 3}
+  spellType: 1
+  duration: 9
+  power: 1.5

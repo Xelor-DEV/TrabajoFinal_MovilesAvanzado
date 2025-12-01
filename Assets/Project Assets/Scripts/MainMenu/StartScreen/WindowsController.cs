@@ -26,7 +26,7 @@ public class WindowsController : MonoBehaviour
     private Vector3 originalScale;
     private bool isInitialized = false;
 
-    private void Awake()
+    protected virtual void Awake()
     {
         InitializeWindow();
     }
@@ -62,7 +62,7 @@ public class WindowsController : MonoBehaviour
         isInitialized = true;
     }
 
-    public void ShowWindow()
+    public virtual void ShowWindow()
     {
         if (!isInitialized) InitializeWindow();
 
@@ -84,7 +84,7 @@ public class WindowsController : MonoBehaviour
         }
     }
 
-    public void HideWindow()
+    public virtual void HideWindow()
     {
         if (!isInitialized) InitializeWindow();
 

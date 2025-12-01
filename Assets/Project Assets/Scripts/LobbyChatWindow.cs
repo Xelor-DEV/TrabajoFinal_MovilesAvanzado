@@ -1,9 +1,10 @@
+using DG.Tweening;
+using System;
+using System.Collections.Generic;
+using TMPro;
+using Unity.Services.Vivox;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
-using System.Collections.Generic;
-using DG.Tweening;
-using Unity.Services.Vivox;
 
 public class LobbyChatWindow : MonoBehaviour
 {
@@ -37,8 +38,10 @@ public class LobbyChatWindow : MonoBehaviour
         // Forzar suscripción a eventos en VivoxLobbyManager
         VivoxLobbyManager.Instance.DebugSubscriptionStatus();
 
-        // Suscribirse a eventos de mensajes y cambios de canal
+        // Suscribirse a eventos de mensajes directos también
         VivoxLobbyManager.Instance.LobbyChatMessageReceived += OnLobbyChatMessageReceived;
+        VivoxLobbyManager.Instance.DirectMessageReceived += OnDirectMessageReceived;
+        VivoxLobbyManager.Instance.OnDirectMessageSent += OnDirectMessageSent;
         VivoxLobbyManager.Instance.OnLobbyChannelChanged += OnLobbyChannelChanged;
         VivoxLobbyManager.Instance.OnLobbyChannelLeft += OnLobbyChannelLeft;
 
@@ -61,6 +64,8 @@ public class LobbyChatWindow : MonoBehaviour
         if (VivoxLobbyManager.Instance != null)
         {
             VivoxLobbyManager.Instance.LobbyChatMessageReceived -= OnLobbyChatMessageReceived;
+            VivoxLobbyManager.Instance.DirectMessageReceived -= OnDirectMessageReceived;
+            VivoxLobbyManager.Instance.OnDirectMessageSent -= OnDirectMessageSent;
             VivoxLobbyManager.Instance.OnLobbyChannelChanged -= OnLobbyChannelChanged;
             VivoxLobbyManager.Instance.OnLobbyChannelLeft -= OnLobbyChannelLeft;
         }
@@ -132,14 +137,71 @@ public class LobbyChatWindow : MonoBehaviour
         string message = messageInputField.text.Trim();
         if (string.IsNullOrEmpty(message)) return;
 
+        // Comando para mostrar jugadores disponibles
+        if (message.Equals("/players", StringComparison.OrdinalIgnoreCase) ||
+            message.Equals("/list", StringComparison.OrdinalIgnoreCase))
+        {
+            ShowAvailablePlayers();
+            messageInputField.text = "";
+            return;
+        }
+
         Debug.Log($"LobbyChatWindow: Sending message: {message}");
 
         await VivoxLobbyManager.Instance.SendLobbyMessage(message);
         messageInputField.text = "";
 
-        // Mantener focus en el input field
         messageInputField.Select();
         messageInputField.ActivateInputField();
+    }
+
+    private void OnDirectMessageReceived(VivoxMessage message)
+    {
+        Debug.Log($"LobbyChatWindow: Received direct message from {message.SenderDisplayName}: {message.MessageText}");
+
+        // Mostrar mensaje directo con formato especial
+        AddDirectMessageToChat(message.SenderDisplayName, message.MessageText, false);
+        ScrollToBottom();
+    }
+
+    private void OnDirectMessageSent(string targetPlayer, string message)
+    {
+        Debug.Log($"LobbyChatWindow: Sent direct message to {targetPlayer}: {message}");
+
+        // Mostrar mensaje directo enviado con formato especial
+        AddDirectMessageToChat(targetPlayer, message, true);
+        ScrollToBottom();
+    }
+
+    private void AddDirectMessageToChat(string playerName, string messageText, bool isSentByMe)
+    {
+        Debug.Log($"LobbyChatWindow: Adding direct message to chat - {playerName}: {messageText}");
+
+        if (chatMessagePrefab == null || content == null)
+        {
+            Debug.LogError("LobbyChatWindow: chatMessagePrefab or content is null!");
+            return;
+        }
+
+        GameObject newMessage = Instantiate(chatMessagePrefab, content);
+        LobbyChatMessageUI messageUI = newMessage.GetComponent<LobbyChatMessageUI>();
+
+        if (messageUI != null)
+        {
+            string prefix = isSentByMe ? "[DM to " : "[DM from ";
+            string suffix = "]";
+
+            messageUI.Initialize($"{prefix}{playerName}{suffix}", messageText, Color.magenta);
+            messageInstances.Add(messageUI);
+
+            // Animación de aparición
+            newMessage.transform.localScale = Vector3.zero;
+            newMessage.transform.DOScale(Vector3.one, messageAppearDuration).SetEase(Ease.OutBack);
+        }
+        else
+        {
+            Debug.LogError("LobbyChatWindow: LobbyChatMessageUI component not found on prefab!");
+        }
     }
 
     private void ScrollToBottom()
@@ -167,15 +229,35 @@ public class LobbyChatWindow : MonoBehaviour
         messageInstances.Clear();
     }
 
-    // Para enviar mensaje con Enter
-    private void Update()
+    private void AddSystemMessageToChat(string message, Color color)
     {
-        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+        if (chatMessagePrefab == null || content == null)
         {
-            if (messageInputField.isFocused && !string.IsNullOrEmpty(messageInputField.text.Trim()))
-            {
-                SendMessage();
-            }
+            Debug.LogError("LobbyChatWindow: chatMessagePrefab or content is null!");
+            return;
+        }
+
+        GameObject newMessage = Instantiate(chatMessagePrefab, content);
+        LobbyChatMessageUI messageUI = newMessage.GetComponent<LobbyChatMessageUI>();
+
+        if (messageUI != null)
+        {
+            messageUI.Initialize("[System]", message, color);
+            messageInstances.Add(messageUI);
+
+            newMessage.transform.localScale = Vector3.zero;
+            newMessage.transform.DOScale(Vector3.one, messageAppearDuration).SetEase(Ease.OutBack);
+        }
+    }
+
+    public void ShowAvailablePlayers()
+    {
+        var availablePlayers = VivoxLobbyManager.Instance.GetAvailablePlayerNames();
+        if (availablePlayers != null && availablePlayers.Count > 0)
+        {
+            string playerList = "Available players: " + string.Join(", ", availablePlayers);
+            AddSystemMessageToChat(playerList, Color.cyan);
+            ScrollToBottom();
         }
     }
 }
