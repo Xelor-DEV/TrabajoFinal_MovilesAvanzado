@@ -59,6 +59,6 @@ Material:
     - _Scale2: 10
     - _Speed: 2
     m_Colors:
-    - _Color: {r: 0.5787181, g: 0.04592373, b: 3.245283, a: 1}
+    - _Color: {r: 1.0685571, g: 0.08479452, b: 5.9921575, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

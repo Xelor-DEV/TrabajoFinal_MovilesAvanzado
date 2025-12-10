@@ -53,9 +53,9 @@ MonoBehaviour:
         m_BuildConfiguration: 0
         m_WsaArchitecture: 
         m_WsaUWPVisualStudioVersion: 
-        m_WsaUWPSDK: 10.0.26100.0
+        m_WsaUWPSDK: 10.0.19041.0
         m_WsaMinUWPSDK: 10.0.19041.0
         m_WsaUWPBuildType: 1
         m_WsaBuildAndRunDeployTarget: 2
-        m_WindowsDevicePortalAddress: 
-        m_WindowsDevicePortalUsername: 
+        m_WindowsDevicePortalAddress: https://10.200.16.26:11443
+        m_WindowsDevicePortalUsername: VGVjc3Vw

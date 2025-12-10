@@ -877,11 +877,11 @@ PlayerSettings:
   m_MobileRenderingPath: 1
   metroPackageName: TrabajoFinalMovilesAvanzado
   metroPackageVersion: 1.0.0.0
-  metroCertificatePath: 
+  metroCertificatePath: Assets/WSATestCertificate.pfx
   metroCertificatePassword: 
-  metroCertificateSubject: 
-  metroCertificateIssuer: 
-  metroCertificateNotAfter: 0000000000000000
+  metroCertificateSubject: Xelor-DEV
+  metroCertificateIssuer: Xelor-DEV
+  metroCertificateNotAfter: 80c7bf47c282dd01
   metroApplicationDescription: TrabajoFinal_MovilesAvanzado
   wsaImages: {}
   metroTileShortName: TrabajoFinal_MovilesAvanzado
