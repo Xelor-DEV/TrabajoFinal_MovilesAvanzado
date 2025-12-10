@@ -1,0 +1,5 @@
+C:/Users/Alumno/Documents/GitHub/TrabajoFinal_MovilesAvanzado/.utmp/RelWithDebInfo/6m5v4h2z/arm64-v8a/CMakeFiles/edit_cache.dir
+C:/Users/Alumno/Documents/GitHub/TrabajoFinal_MovilesAvanzado/.utmp/RelWithDebInfo/6m5v4h2z/arm64-v8a/CMakeFiles/rebuild_cache.dir
+C:/Users/Alumno/Documents/GitHub/TrabajoFinal_MovilesAvanzado/.utmp/RelWithDebInfo/6m5v4h2z/arm64-v8a/GameActivity/CMakeFiles/game.dir
+C:/Users/Alumno/Documents/GitHub/TrabajoFinal_MovilesAvanzado/.utmp/RelWithDebInfo/6m5v4h2z/arm64-v8a/GameActivity/CMakeFiles/edit_cache.dir
+C:/Users/Alumno/Documents/GitHub/TrabajoFinal_MovilesAvanzado/.utmp/RelWithDebInfo/6m5v4h2z/arm64-v8a/GameActivity/CMakeFiles/rebuild_cache.dir
