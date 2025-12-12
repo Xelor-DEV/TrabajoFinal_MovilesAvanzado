@@ -12,7 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a24bd29708b56824cafd8034645f1b8c, type: 3}
   m_Name: MatchData
   m_EditorClassIdentifier: 
-  maxPlayers: 2
+  minPlayers: 2
+  maxPossiblePlayers: 4
+  currentPlayerSelection: 2
   playerColors:
   - {r: 0.5372549, g: 0.8117647, b: 0.9411765, a: 1}
   - {r: 0.98039216, g: 0.627451, b: 0.627451, a: 1}
@@ -20,4 +22,23 @@ MonoBehaviour:
   - {r: 0.99215686, g: 0.99215686, b: 0.5882353, a: 1}
   - {r: 0.7019608, g: 0.61960787, b: 0.70980394, a: 1}
   - {r: 1, g: 0.7019608, b: 0.2784314, a: 1}
-  assignedPlayers: []
+  assignedPlayers:
+  - playerIndex: 0
+    controlScheme: 
+    deviceIds: 
+  - playerIndex: 0
+    controlScheme: 
+    deviceIds: 
+  - playerIndex: 0
+    controlScheme: 
+    deviceIds: 
+  - playerIndex: 0
+    controlScheme: 
+    deviceIds: 
+  - playerIndex: 0
+    controlScheme: 
+    deviceIds: 
+  - playerIndex: 0
+    controlScheme: 
+    deviceIds: 
+  winningPlayerIndex: -1

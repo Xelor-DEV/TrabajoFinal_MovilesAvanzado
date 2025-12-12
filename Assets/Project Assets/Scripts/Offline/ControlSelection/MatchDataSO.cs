@@ -7,21 +7,28 @@ using UnityEngine.InputSystem.Utilities;
 [CreateAssetMenu(fileName = "MatchData", menuName = "Game/MatchData")]
 public class MatchDataSO : ScriptableObject
 {
-    [Header("Configuration")]
-    public int maxPlayers = 2;
+    [Header("Configuration Limits")]
+    // [NUEVO] Límites definidos en el SO
+    public int minPlayers = 2;
+    public int maxPossiblePlayers = 6;
+
+    [Header("Current Settings")]
+    // [NUEVO] La selección actual que modificaremos en el menú
+    public int currentPlayerSelection = 2;
+
     public Color[] playerColors;
 
     [Header("Runtime Data")]
     public List<PlayerAssignment> assignedPlayers = new List<PlayerAssignment>();
-
-    // [NUEVO] Variable para persistir quién ganó entre escenas
-    public int winningPlayerIndex = -1; 
+    public int winningPlayerIndex = -1;
 
     public void InitializeList()
     {
         assignedPlayers.Clear();
-        winningPlayerIndex = -1; // Reseteamos ganador al iniciar
-        for (int i = 0; i < maxPlayers; i++)
+        winningPlayerIndex = -1;
+
+        // Usamos la selección actual para inicializar la lista
+        for (int i = 0; i < currentPlayerSelection; i++)
         {
             assignedPlayers.Add(null);
         }
@@ -50,5 +57,5 @@ public class PlayerAssignment
 {
     public int playerIndex;
     public string controlScheme;
-    public List<int> deviceIds; 
+    public List<int> deviceIds;
 }

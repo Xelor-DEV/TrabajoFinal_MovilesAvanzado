@@ -55,7 +55,7 @@ private void Start()
         foreach (Transform child in playerContainer) Destroy(child.gameObject);
         _spawnedSlots.Clear();
 
-        for (int i = 0; i < matchData.maxPlayers; i++)
+        for (int i = 0; i < matchData.currentPlayerSelection; i++)
         {
             PlayerSlotUI slot = Instantiate(playerSlotPrefab, playerContainer);
             Color c = (i < matchData.playerColors.Length) ? matchData.playerColors[i] : Color.white;
@@ -147,7 +147,7 @@ private void Start()
             // Mando 1 (index 0) -> Slot 0
             // Mando 2 (index 1) -> Slot 1
             // Mando 3 (index 2) -> Slot 0 (Se queda ah� mirando)
-            int targetSlotIndex = cursorIndex % matchData.maxPlayers;
+            int targetSlotIndex = cursorIndex % matchData.currentPlayerSelection;
 
             // Asignar color
             Color assignedColor = Color.white;
@@ -166,7 +166,7 @@ private void Start()
 
     public bool TrySelectPlayer(int slotIndex, PlayerInput input)
     {
-        if (_playersReadyCount >= matchData.maxPlayers) return false;
+        if (_playersReadyCount >= matchData.currentPlayerSelection) return false;
 
         PlayerSlotUI slot = _spawnedSlots[slotIndex];
 
@@ -185,7 +185,7 @@ private void Start()
     
     private void CheckIfAllReady()
     {
-        if (_playersReadyCount == matchData.maxPlayers)
+        if (_playersReadyCount == matchData.currentPlayerSelection)
         {
             foreach (DeviceCursor cursor in _activeCursors.Values)
             {

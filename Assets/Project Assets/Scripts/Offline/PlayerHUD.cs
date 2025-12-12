@@ -53,6 +53,12 @@ public class PlayerHUD : MonoBehaviour
         {
             pushAbilityFill.fillAmount = 0f;
         }
+
+        if (spellIcon != null)
+        {
+            // Establecer el color a blanco con transparencia 0 (R=1, G=1, B=1, A=0)
+            spellIcon.color = new Color(1f, 1f, 1f, 0f);
+        }
     }
 
     private void OnDestroy()
