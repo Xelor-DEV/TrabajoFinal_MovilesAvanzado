@@ -11,6 +11,10 @@ public class GameInitializer : MonoBehaviour
     [SerializeField] private StartingGridManager gridManager;
     [SerializeField] private MatchDataSO matchData;
 
+    [Header("Background Configuration")]
+    [Tooltip("Referencia a la cámara que limpia el fondo de la pantalla")]
+    [SerializeField] private Camera backgroundCamera; 
+
     [Header("Player Settings")]
     [SerializeField] private GameObject playerPrefab;
 
@@ -27,6 +31,7 @@ public class GameInitializer : MonoBehaviour
 
     private void Start()
     {
+        SetupBackgroundCamera();
         InitializeInputManager();
         SpawnPlayers();
         StartCoroutine(RaceCountdownRoutine());
@@ -43,11 +48,52 @@ public class GameInitializer : MonoBehaviour
         playerInputManager.splitScreen = false;
     }
 
+    private void SetupBackgroundCamera()
+    {
+        if (backgroundCamera == null)
+        {
+            Debug.LogWarning("Background Camera no asignada en GameInitializer.");
+            return;
+        }
+
+        // Forzamos la configuración para que limpie cualquier residuo visual
+        backgroundCamera.clearFlags = CameraClearFlags.SolidColor;
+        backgroundCamera.backgroundColor = Color.black;
+
+        // Depth en -1 asegura que se renderice ANTES que las cámaras de los jugadores
+        backgroundCamera.depth = -1;
+
+        // Culling Mask en 0 (Nothing) para que no procese objetos 3D, solo el color de fondo
+        backgroundCamera.cullingMask = 0;
+
+        // Nos aseguramos de que cubra toda la pantalla
+        backgroundCamera.rect = new Rect(0, 0, 1, 1);
+    }
+
     private void SpawnPlayers()
     {
         if (matchData == null || gridManager == null) return;
 
         int totalPlayers = matchData.assignedPlayers.Count;
+        int totalSpawnPoints = gridManager.SpawnPoints.Length;
+
+        // --- LÓGICA DE POSICIONES ALEATORIAS ÚNICAS ---
+        // 1. Creamos una lista con todos los índices disponibles (0, 1, 2, 3...)
+        List<int> randomSpawnIndices = new List<int>();
+        for (int j = 0; j < totalSpawnPoints; j++)
+        {
+            randomSpawnIndices.Add(j);
+        }
+
+        // 2. Barajamos la lista (Fisher-Yates Shuffle simple) para desordenarla
+        // Esto asegura que al tomar índices secuencialmente de esta lista, sean aleatorios y no se repitan.
+        for (int j = 0; j < randomSpawnIndices.Count; j++)
+        {
+            int temp = randomSpawnIndices[j];
+            int randomIndex = Random.Range(j, randomSpawnIndices.Count);
+            randomSpawnIndices[j] = randomSpawnIndices[randomIndex];
+            randomSpawnIndices[randomIndex] = temp;
+        }
 
         for (int i = 0; i < totalPlayers; i++)
         {
@@ -57,9 +103,11 @@ public class GameInitializer : MonoBehaviour
             // SEGURIDAD: Si por alguna razón el slot está vacío (jugador no se unió), lo saltamos
             if (assignment == null) continue;
 
-            // Usamos 'assignment.playerIndex' para asegurar que usamos el spawn point correcto
-            // aunque usualmente 'i' y 'assignment.playerIndex' ahora serán iguales gracias al Sort.
-            Transform spawnPoint = gridManager.GetSpawnPoint(assignment.playerIndex);
+            // 3. ELEGIR POSICIÓN
+            // Usamos la lista barajada. El módulo (%) evita errores si hay más jugadores que puntos de spawn
+            // (aunque idealmente deberías tener suficientes puntos para todos).
+            int uniqueRandomIndex = randomSpawnIndices[i % randomSpawnIndices.Count];
+            Transform spawnPoint = gridManager.GetSpawnPoint(uniqueRandomIndex);
 
             // 1. Instanciar
             GameObject playerInstance = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
